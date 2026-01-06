@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <header class="hero">
+        <div class="container">
+            <div class="profile-container">
+                <img src="Mubin.jpeg" alt="K. M. Fathum Mubin Sachcha" class="profile-pic">
+            </div>
+            <h1 class="name">K. M. Fathum Mubin Sachcha</h1>
+            <p class="role">Creative Developer & Designer</p>
+            
+            <p class="bio">Curious, tech-driven, and constantly evolving—an editor and software engineer with a sharp eye for detail and a drive to build, learn, and grow beyond limits.</p>
+
+            <div class="social-links hero-social">
+                <a href="https://github.com/mubin25s" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="mailto:fathummubin26@gmail.com" aria-label="Gmail"><i class="fa-solid fa-envelope"></i></a>
+                <a href="https://www.linkedin.com/in/fathum-mubin-090937280?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="https://discord.com/users/mubin.26" target="_blank" aria-label="Discord: mubin.26" title="mubin.26"><i class="fa-brands fa-discord"></i></a>
+                <a href="https://x.com/FathumMubin26" target="_blank" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://www.facebook.com/share/14RTXWtMn8Y/" target="_blank" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                <a href="https://www.instagram.com/fathum.mubin.26?igsh=MTR3Y2hheGpvdnNrcg==" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/8801302910017" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+            
+            <div class="hero-actions">
+                <a href="#contact" class="btn btn-primary">Contact Me</a>
+                <a href="#showcase" class="btn btn-secondary">View Work</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="showcase" class="section">
+        <div class="container">
+            <h2 class="section-title">My Projects</h2>
+            <div class="projects-grid">
+                <!-- Project 1 -->
+                <article class="project-card">
+                    <div class="card-content">
+                        <h3>Pet Shelter</h3>
+                        <p>A web application for managing pet adoptions and shelter inventory.</p>
+                        <div class="tags">
+                            <span>HTML</span>
+                            <span>CSS</span>
+                            <span>JavaScript</span>
+                            <span>PHP</span>
+                            <span>Laravel</span>
+                            <span>MySQL</span>
+                        </div>
+                        <div class="card-links">
+                            <a href="pet-shelter/index.html" target="_blank">View Demo</a>
+                            <a href="https://github.com/mubin25s/Pet_Shelter" target="_blank">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 2 -->
+                <article class="project-card">
+                    <div class="card-content">
+                        <h3>Course Grade Calculator</h3>
+                        <p>A dynamic calculator for computing university course grades and GPAs.</p>
+                        <div class="tags">
+                            <span>HTML</span>
+                            <span>CSS</span>
+                            <span>JavaScript</span>
+                            <span>DOM Manipulation</span>
+                        </div>
+                        <div class="card-links">
+                            <a href="https://mubin25s.github.io/Course-Grade-Calculator/" target="_blank">View Demo</a>
+                            <a href="https://github.com/mubin25s/Course-Grade-Calculator" target="_blank">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Project 3 -->
+                <article class="project-card">
+                    <div class="card-content">
+                        <h3>Banking System</h3>
+                        <p>A robust banking management system with transaction handling.</p>
+                        <div class="tags">
+                            <span>C Programming</span>
+                            <span>File Handling</span>
+                            <span>Data Structures</span>
+                        </div>
+                        <div class="card-links">
+                            <a href="banking-system/index.html" target="_blank">View Demo</a>
+                            <a href="https://github.com/mubin25s/Code-C/blob/main/Project/Banking%2Csystem.c" target="_blank">GitHub</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="interests" class="section alt-bg">
+        <div class="container">
+            <h2 class="section-title">Interests & Skills</h2>
+            <div class="interests-container shadow-border">
+                <ul class="interests-list">
+                    <li>Programming Fundamentals</li>
+                    <li>Problem-Solving</li>
+                    <li>Web Development</li>
+                    <li>Frontend & UI/UX Awareness</li>
+                    <li>Backend & Database Basics</li>
+                    <li>Open Source</li>
+                    <li>Project Structuring</li>
+                    <li>Editing & Clarity</li>
+                    <li>Fast Learner, Tech-Curious</li>
+                    <li>Photography</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">Have a project in mind? Let's talk.</p>
+            
+            <form id="contact-form" class="contact-form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Your Name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="proportialduck@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="5" required placeholder="Project details..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 K. M. Fathum Mubin Sachcha. All rights reserved.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.5;">
+                <a href="contact_db/view_messages.php" target="_blank" style="color: inherit; text-decoration: none;">View Messages (Database)</a>
+            </p>
+        </div>
+    </footer>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
