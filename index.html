@@ -24,6 +24,25 @@
             <h1 class="name">K. M. Fathum Mubin Sachcha</h1>
             <p class="role">Creative Developer & Designer</p>
             
+            <div class="avg-rating-container" id="avg-rating-container">
+                <div class="star-rating-display" aria-label="Average Rating">
+                    <div class="stars-bg">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="stars-fill" id="stars-fill" style="width: 0%">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+            </div>
+            
             <p class="bio">Curious, tech-driven, and constantly evolving—an editor and software engineer with a sharp eye for detail and a drive to build, learn, and grow beyond limits.</p>
 
             <div class="social-links hero-social">
@@ -165,8 +184,31 @@
                     <textarea id="message" name="message" rows="5" required placeholder="Project details..."></textarea>
                 </div>
 
+
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="reviews" class="section alt-bg">
+        <div class="container">
+            <h2 class="section-title">Leave a Review</h2>
+            <p class="section-subtitle">Your feedback matters! Rate your experience.</p>
+            
+            <form id="rating-form" class="contact-form">
+                <div class="inputs-grid">
+                    <div class="form-group">
+                        <label for="rating-name">Name</label>
+                        <input type="text" id="rating-name" name="name" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="rating-email">Email</label>
+                        <input type="email" id="rating-email" name="email" required placeholder="your@email.com">
+                    </div>
+                </div>
+
                 <div class="form-group rating-group">
-                    <label>Rate Your Experience (Optional)</label>
+                    <label>Rate Your Experience</label>
                     <div class="star-rating" id="star-rating">
                         <i class="fa-regular fa-star" data-rating="1"></i>
                         <i class="fa-regular fa-star" data-rating="2"></i>
@@ -181,7 +223,7 @@
                     <label for="review">Review (Optional)</label>
                     <textarea id="review" name="review" rows="3" placeholder="Share your thoughts about my work..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Send Message</button>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
             </form>
         </div>
     </section>

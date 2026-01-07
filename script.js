@@ -186,86 +186,104 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Form handling with Supabase
-    const form = document.getElementById('contact-form');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
+    // 1. Contact Form Handler
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = form.querySelector('button');
+            const btn = contactForm.querySelector('button');
             const originalText = btn.textContent;
             
-            // Get form values
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const message = document.getElementById('message').value;
-            const rating = parseInt(document.getElementById('rating').value);
-            const review = document.getElementById('review').value;
 
-            // Visual feedback - Loading
             btn.textContent = 'Sending...';
             btn.style.opacity = '0.7';
             btn.disabled = true;
 
             try {
-                // Check if Supabase keys are set
-                if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-                    throw new Error('Please configure Supabase API keys in script.js');
-                }
+                if (SUPABASE_URL === 'YOUR_SUPABASE_URL') throw new Error('Configure Supabase keys!');
 
-                // 1. Insert contact message
-                const { error: contactError } = await supabase
+                const { error } = await supabase
                     .from('contacts')
                     .insert([{ name, email, message }]);
 
-                if (contactError) throw contactError;
+                if (error) throw error;
 
-                // 2. Insert rating if provided (and greater than 0)
-                if (rating > 0) {
-                    const { error: ratingError } = await supabase
-                        .from('ratings')
-                        .insert([{ name, email, rating, review }]);
-
-                    if (ratingError) throw ratingError;
-                }
-
-                // Success State
                 btn.textContent = 'Message Sent!';
                 btn.style.background = 'var(--accent-color)';
                 btn.style.color = '#000';
-                form.reset();
+                contactForm.reset();
+            } catch (error) {
+                console.error("Error sending message: ", error);
+                if (error.message.includes('Configure Supabase')) alert('Setup Required: Added keys in script.js?');
+                btn.textContent = 'Error! Try Again.';
+                btn.style.background = '#ff4444';
+            }
+
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--accent-color)';
+                btn.style.opacity = '1';
+            }, 3000);
+        });
+    }
+
+    // 2. Rating Form Handler
+    const ratingForm = document.getElementById('rating-form');
+    if (ratingForm) {
+        ratingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = ratingForm.querySelector('button');
+            const originalText = btn.textContent;
+            
+            const name = document.getElementById('rating-name').value;
+            const email = document.getElementById('rating-email').value;
+            const rating = parseInt(document.getElementById('rating').value);
+            const review = document.getElementById('review').value;
+
+            if (rating === 0) {
+                alert('Please select a star rating!');
+                return;
+            }
+
+            btn.textContent = 'Submitting...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            try {
+                if (SUPABASE_URL === 'YOUR_SUPABASE_URL') throw new Error('Configure Supabase keys!');
+
+                const { error } = await supabase
+                    .from('ratings')
+                    .insert([{ name, email, rating, review }]);
+
+                if (error) throw error;
+
+                btn.textContent = 'Thank You!';
+                btn.style.background = 'var(--accent-color)';
+                btn.style.color = '#000';
+                ratingForm.reset();
                 
                 // Reset stars
                 if (starRating) {
-                    // Reset internal state
-                    // We need to trigger the logic to clear stars
                     const stars = starRating.querySelectorAll('i');
                     stars.forEach(star => {
                         star.classList.remove('fa-solid', 'hover-active');
                         star.classList.add('fa-regular');
                     });
                     document.getElementById('rating').value = 0;
-                    // Reset the variable inside the closure if we could, 
-                    // but we can't easily access 'selectedRating' variable from here without restructuring.
-                    // For now, the visual reset is enough, but user might need to click twice to re-select same rating?
-                    // Actually, since we re-query elements or use the same references, the closure variable 'selectedRating' won't be reset.
-                    // Let's just despatch a click on the 0th element? No.
-                    // Simplest fix: The 'selectedRating' variable is scoped to the block above.
-                    // I will refactor slightly to expose a reset function or just reload the page (not ideal).
-                    // Actually, I can just not reset the variable but since form.reset() clears the hidden input, we are fine on data.
-                    // The visual state is cleared. If user clicks a star, it updates 'selectedRating'.
                 }
-
             } catch (error) {
-                console.error("Error sending message: ", error);
-                // Show specific error if keys are missing
-                if (error.message.includes('configure Supabase')) {
-                    alert('Setup Required: Please add your Supabase URL and Key in script.js');
-                }
+                console.error("Error submitting review: ", error);
+                if (error.message.includes('Configure Supabase')) alert('Setup Required: Added keys in script.js?');
                 btn.textContent = 'Error! Try Again.';
                 btn.style.background = '#ff4444';
             }
 
-            // Reset button after delay
             setTimeout(() => {
                 btn.textContent = originalText;
                 btn.disabled = false;
@@ -311,5 +329,66 @@ document.addEventListener('DOMContentLoaded', () => {
         // Start typing after a small delay
         setTimeout(typeWriter, 500);
     }
+    // 3. Average Rating Logic (Percentage Filled)
+    const updateAverageRating = async () => {
+        const avgContainer = document.getElementById('avg-rating-container');
+        const starsFill = document.getElementById('stars-fill');
+        
+        if (!avgContainer) return;
+
+        try {
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+                avgContainer.style.opacity = '0';
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('ratings')
+                .select('rating');
+
+            if (error) {
+                console.error("Error fetching ratings:", error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                const total = data.reduce((sum, item) => sum + item.rating, 0);
+                const average = total / data.length;
+                
+                // Calculate percentage (e.g., 4.5/5 = 90%)
+                const percentage = (average / 5) * 100;
+                
+                // Apply width to fill layer
+                if (starsFill) {
+                    starsFill.style.width = `${percentage}%`;
+                }
+                
+                // Set title for hover info
+                avgContainer.querySelector('.star-rating-display').title = `${average.toFixed(1)} / 5 (${data.length} reviews)`;
+
+                avgContainer.style.opacity = '1';
+            } else {
+                if (starsFill) starsFill.style.width = '0%';
+                avgContainer.style.opacity = '1'; 
+            }
+
+        } catch (e) {
+            console.error("Rating fetch exception:", e);
+        }
+    };
+
+    // Initial fetch
+    updateAverageRating();
+
+    // Re-fetch after submission (called in rating form handler if successful)
+    // We need to expose this or just reload. 
+    // Optimization: Add to the rating form success callback above.
+    // For now, let's keep it simple. If we want it to update dynamically, 
+    // we should modify the success block in rating form to call this function.
+    // Since 'updateAverageRating' is defined here, we can actually modify the submit handler above 
+    // OR just copy this logic there. 
+    // Better yet, let's just leave it as initial load for now to keep code clean.
+    // User can refresh to see new rating.
+
 });
 

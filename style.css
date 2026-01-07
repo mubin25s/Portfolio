@@ -175,6 +175,7 @@ h1, h2, h3 {
     justify-content: center;
     text-align: center;
     position: relative;
+    padding-top: 80px; /* Added space at top */
 }
 
 .profile-container {
@@ -255,6 +256,45 @@ h1, h2, h3 {
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
 
+/* Average Rating Badge - Minimalist & Percentage Filled */
+.avg-rating-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent; /* No background as requested "only stars" */
+    padding: 0;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards 0.5s;
+}
+
+.star-rating-display {
+    position: relative;
+    display: inline-block;
+    font-size: 1.5rem; /* Larger stars */
+    line-height: 1;
+}
+
+.stars-bg {
+    color: rgba(255, 215, 0, 0.2); /* Dim gold */
+}
+
+.stars-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 0%; /* Dynamic */
+    color: #ffd700; /* Bright Neon Gold */
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+    transition: width 0.5s ease-out;
+}
+
+.star-rating-display i {
+    margin: 0 4px; /* More spacing for glow */
+}
+
 .email a {
     color: var(--text-secondary);
     font-size: 1.1rem;
@@ -300,7 +340,7 @@ h1, h2, h3 {
 
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2.5rem;
     perspective: 1000px;
 }
@@ -445,6 +485,12 @@ h1, h2, h3 {
     font-size: 1.2rem;
 }
 
+.inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
 .form-group {
     margin-bottom: 2rem;
 }
@@ -516,25 +562,114 @@ h1, h2, h3 {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 30px;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+}
+
 @media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+
     .name {
         font-size: 2.2rem;
     }
     
     .section-title {
-        font-size: 2.2rem;
+        font-size: 2rem;
+        margin-bottom: 3rem;
     }
     
     .contact-form {
         padding: 2rem;
+        margin: 0 10px;
     }
 
+    /* Hide cursor on touch devices */
     .cursor, .cursor-follower {
-        display: none; /* Hide custom cursor on touch devices */
+        display: none !important;
     }
     
     * {
-        cursor: auto;
+        cursor: auto !important;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0 2rem;
+    }
+
+    .btn-secondary {
+        margin-left: 0;
+    }
+
+    .profile-pic, .profile-pic-placeholder {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .profile-container::before {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .name {
+        font-size: 1.8rem;
+    }
+
+    .role {
+        font-size: 1.4rem;
+    }
+
+    .profile-pic, .profile-pic-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .profile-container::before {
+        width: 130px;
+        height: 130px;
+    }
+
+    .bio {
+        padding: 1.2rem;
+        font-size: 1rem;
+        border-radius: 30px;
+    }
+
+    .project-card {
+        padding: 1.5rem;
+    }
+
+    .interests-list li {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    .social-links {
+        gap: 1.5rem;
+    }
+    
+    .inputs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .rating-group {
+        text-align: center;
+    }
+    
+    .star-rating {
+        justify-content: center;
     }
 }
 
