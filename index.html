@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
@@ -163,6 +164,23 @@
                     <label for="message">Message</label>
                     <textarea id="message" name="message" rows="5" required placeholder="Project details..."></textarea>
                 </div>
+
+                <div class="form-group rating-group">
+                    <label>Rate Your Experience (Optional)</label>
+                    <div class="star-rating" id="star-rating">
+                        <i class="fa-regular fa-star" data-rating="1"></i>
+                        <i class="fa-regular fa-star" data-rating="2"></i>
+                        <i class="fa-regular fa-star" data-rating="3"></i>
+                        <i class="fa-regular fa-star" data-rating="4"></i>
+                        <i class="fa-regular fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="rating" name="rating" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="review">Review (Optional)</label>
+                    <textarea id="review" name="review" rows="3" placeholder="Share your thoughts about my work..."></textarea>
+                </div>
                 <button type="submit" class="btn btn-primary">Send Message</button>
             </form>
         </div>
@@ -172,7 +190,7 @@
         <div class="container">
             <p>&copy; 2026 K. M. Fathum Mubin Sachcha. All rights reserved.</p>
             <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.5;">
-                <a href="contact_db/view_messages.php" target="_blank" style="color: inherit; text-decoration: none;">View Messages (Database)</a>
+                <a href="admin.html" target="_blank" style="color: inherit; text-decoration: none;">View Messages & Ratings (Admin)</a>
             </p>
         </div>
     </footer>

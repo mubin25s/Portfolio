@@ -538,3 +538,51 @@ h1, h2, h3 {
     }
 }
 
+/* Star Rating Styles */
+.rating-group {
+    margin-bottom: 1.5rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.star-rating i {
+    color: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.star-rating i:hover {
+    color: #ffd700;
+    transform: scale(1.2) rotate(10deg);
+}
+
+.star-rating i.active {
+    color: #ffd700;
+}
+
+.star-rating i.fa-solid {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Hover effect for all stars before hovered star */
+.star-rating:hover i {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.star-rating i:hover,
+.star-rating i:hover ~ i {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.star-rating i:hover,
+.star-rating i.hover-active {
+    color: #ffd700;
+}
+

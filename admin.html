@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Admin Dashboard</h1>
+            <a href="index.html" class="back-btn">← Back to Portfolio</a>
+        </header>
+
+        <!-- Authentication Section -->
+        <div id="auth-section">
+            <h2>🔐 Login Required</h2>
+            <form id="login-form">
+                <input type="email" id="admin-email" placeholder="Email" required>
+                <input type="password" id="admin-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Dashboard Content (hidden until authenticated) -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- Messages Section -->
+            <section class="data-section">
+                <h2>📧 Contact Messages</h2>
+                <div id="messages-container"></div>
+            </section>
+
+            <!-- Ratings Section -->
+            <section class="data-section">
+                <h2>⭐ Ratings & Reviews</h2>
+                <div id="ratings-container"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
