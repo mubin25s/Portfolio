@@ -619,6 +619,13 @@ h1, h2, h3 {
     font-family: inherit;
     font-size: 1rem;
     transition: all 0.3s ease;
+    -webkit-appearance: none; /* Fix for mobile safari */
+    appearance: none;
+}
+
+body {
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .form-group input:focus,
@@ -771,27 +778,38 @@ h1, h2, h3 {
 
 @media (max-width: 480px) {
     .name {
-        font-size: 1.8rem;
+        font-size: 2.2rem;
     }
 
     .role {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     .profile-pic, .profile-pic-placeholder {
-        width: 120px;
-        height: 120px;
+        width: 180px;
+        height: 180px;
     }
     
     .profile-container::before {
-        width: 130px;
-        height: 130px;
+        width: 190px;
+        height: 190px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 1rem;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
     }
 
     .bio {
-        padding: 1.2rem;
-        font-size: 1rem;
-        border-radius: 30px;
+        padding: 0;
+        font-size: 0.95rem;
     }
 
     .project-card {
@@ -800,11 +818,22 @@ h1, h2, h3 {
 
     .interests-list li {
         padding: 8px 16px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+    }
+
+    #languages {
+        min-height: auto;
+        padding: 60px 0;
+    }
+
+    #languages .interests-container {
+        padding: 1.5rem 1rem !important;
     }
 
     .social-links {
-        gap: 1.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .inputs-grid {

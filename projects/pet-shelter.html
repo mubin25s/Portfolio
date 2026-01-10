@@ -73,6 +73,18 @@
             background: rgba(255, 255, 255, 0.05);
             transform: translateY(-3px);
         }
+        @media (max-width: 480px) {
+            body { 
+                height: auto; 
+                min-height: 100vh;
+                padding: 40px 20px;
+                overflow: auto;
+            }
+            .container { padding: 1.5rem; }
+            h1 { font-size: 1.8rem; }
+            p { font-size: 1rem; }
+            .btn { width: 100%; margin: 0.5rem 0; }
+        }
     </style>
 </head>
 <body>
