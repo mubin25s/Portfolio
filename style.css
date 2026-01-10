@@ -144,7 +144,7 @@ h1, h2, h3 {
 
 .section-title {
     font-size: 3rem;
-    margin-bottom: 4rem;
+    margin-bottom: 2.5rem;
     text-align: center;
     background: linear-gradient(to right, #fff, #777);
     -webkit-background-clip: text;
@@ -167,31 +167,48 @@ h1, h2, h3 {
     box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* Header / Hero Section */
+/**** Header / Hero Section ****/
 .hero {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
     position: relative;
-    padding-top: 80px; /* Added space at top */
+    padding-top: 40px;
+}
+
+.hero-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4rem;
+    max-width: 1200px;
+}
+
+.profile-column {
+    flex: 0 0 auto;
+}
+
+.hero-info {
+    flex: 1;
+    text-align: left;
+    max-width: 600px;
 }
 
 .profile-container {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     position: relative;
 }
 
 .profile-pic-placeholder {
-    width: 160px;
-    height: 160px;
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.03);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto;
+    margin: 0;
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
@@ -200,26 +217,26 @@ h1, h2, h3 {
 }
 
 .profile-pic {
-    width: 160px;
-    height: 160px;
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
     position: relative;
     z-index: 2;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-pic:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 0 40px var(--accent-glow);
     border-color: var(--accent-color);
 }
 
 .profile-container {
     position: relative;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0;
 }
 
 /* Glowing ring animation behind the image */
@@ -228,20 +245,21 @@ h1, h2, h3 {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 170px;
-    height: 170px;
+    width: 335px;
+    height: 335px;
     transform: translate(-50%, -50%);
     border-radius: 50%;
     background: linear-gradient(45deg, var(--accent-color), transparent, var(--accent-color));
     z-index: 1;
     animation: spin 4s linear infinite;
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .name {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    line-height: 1.1;
+    font-size: 4rem;
+    margin-bottom: 0.2rem;
+    line-height: 1;
+    font-weight: 900;
     background: linear-gradient(to right, #fff, #aaa);
     -webkit-background-clip: text;
     background-clip: text;
@@ -251,19 +269,34 @@ h1, h2, h3 {
 .role {
     font-size: 1.8rem;
     color: var(--accent-color);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     font-weight: 300;
     text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    min-height: 1.2em; /* Prevent layout shift */
+    display: flex;
+    align-items: center;
+}
+
+.role::after {
+    content: '|';
+    margin-left: 5px;
+    animation: blink 0.7s infinite;
+    color: var(--accent-color);
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
 
 /* Average Rating Badge - Minimalist & Percentage Filled */
 .avg-rating-container {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    background: transparent; /* No background as requested "only stars" */
+    justify-content: flex-start;
+    background: transparent;
     padding: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     opacity: 0;
     animation: fadeIn 0.5s forwards 0.5s;
 }
@@ -308,34 +341,34 @@ h1, h2, h3 {
 .bio {
     font-family: 'Inter', sans-serif;
     font-size: 1.1rem;
-    color: #fff;
-    max-width: 700px;
-    margin: 2.5rem auto;
-    padding: 1.5rem 2.5rem;
+    color: var(--text-secondary);
+    max-width: 550px;
+    margin: 1.5rem 0;
+    padding: 0;
     position: relative;
-    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(0, 242, 255, 0.3);
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.15), inset 0 0 20px rgba(0, 242, 255, 0.05);
-    border-radius: 50px; /* Pill shape */
-    text-align: center;
-    line-height: 1.8;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    text-align: left;
+    line-height: 1.7;
+    backdrop-filter: none;
 }
 
 .bio:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 30px rgba(0, 242, 255, 0.4), inset 0 0 10px rgba(0, 242, 255, 0.1);
-    transform: translateY(-2px);
+    color: #fff;
+    transform: translateX(5px);
 }
 
 .hero-actions {
-    margin-top: 3rem;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.5rem;
 }
 
-/* Glassmorphism Cards */
 .section {
-    padding: 120px 0;
+    padding: 80px 0;
 }
 
 .projects-grid {
@@ -465,12 +498,84 @@ h1, h2, h3 {
     transform: translateY(-3px);
 }
 
+/* Languages Section */
+.languages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.language-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.language-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
+}
+
+.lang-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+.lang-info h3 {
+    font-size: 1.3rem;
+    color: #fff;
+    margin: 0;
+}
+
+.lang-info p {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.lang-bar-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.lang-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent-color), #00a2ff);
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+#languages {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
+}
+
+#languages .container {
+    width: 100%;
+}
+
 /* Contact Section */
+#contact {
+    margin-top: 10rem;
+}
+
 .contact-form {
     max-width: 700px;
     margin: 0 auto;
     background: var(--card-bg);
-    padding: 3rem;
+    padding: 2.5rem;
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(15px);
@@ -480,8 +585,8 @@ h1, h2, h3 {
 .section-subtitle {
     text-align: center;
     color: var(--text-secondary);
-    margin-bottom: 4rem;
-    margin-top: -2.5rem;
+    margin-bottom: 2.5rem;
+    margin-top: -1.5rem;
     font-size: 1.2rem;
 }
 
@@ -492,7 +597,7 @@ h1, h2, h3 {
 }
 
 .form-group {
-    margin-bottom: 2rem;
+    margin-bottom: 1.2rem;
 }
 
 .form-group label {
@@ -535,24 +640,33 @@ h1, h2, h3 {
 
 .social-links {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
+    justify-content: flex-start;
+    gap: 1.2rem;
 }
 
 .hero-social {
-    margin: 1.5rem 0;
+    margin: 0.8rem 0;
 }
 
 .social-links a {
     color: #888;
-    font-size: 1.8rem; /* Larger icons for hero */
-    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .social-links a:hover {
-    color: #fff;
-    transform: translateY(-3px);
-    text-shadow: 0 0 15px var(--accent-glow);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px var(--accent-glow);
+    background: rgba(0, 242, 255, 0.05);
 }
 
 /* Animations Helpers */
@@ -570,6 +684,64 @@ h1, h2, h3 {
     .section-title {
         font-size: 2.5rem;
     }
+
+    .hero-container {
+        gap: 2rem;
+    }
+
+    .profile-pic, .profile-pic-placeholder {
+        width: 280px;
+        height: 280px;
+    }
+
+    .profile-container::before {
+        width: 295px;
+        height: 295px;
+    }
+
+    .name {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .hero {
+        height: auto;
+        padding: 100px 0;
+    }
+
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 3rem;
+    }
+
+    .hero-info {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .bio {
+        text-align: center;
+        margin: 1.5rem auto;
+    }
+
+    .social-links, .hero-actions, .avg-rating-container {
+        justify-content: center;
+    }
+
+    .profile-pic, .profile-pic-placeholder {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .profile-container::before {
+        width: 250px;
+        height: 250px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -577,10 +749,6 @@ h1, h2, h3 {
         padding: 0 20px;
     }
 
-    .name {
-        font-size: 2.2rem;
-    }
-    
     .section-title {
         font-size: 2rem;
         margin-bottom: 3rem;
@@ -598,27 +766,6 @@ h1, h2, h3 {
     
     * {
         cursor: auto !important;
-    }
-
-    .hero-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 0 2rem;
-    }
-
-    .btn-secondary {
-        margin-left: 0;
-    }
-
-    .profile-pic, .profile-pic-placeholder {
-        width: 140px;
-        height: 140px;
-    }
-    
-    .profile-container::before {
-        width: 150px;
-        height: 150px;
     }
 }
 
@@ -720,4 +867,6 @@ h1, h2, h3 {
 .star-rating i.hover-active {
     color: #ffd700;
 }
+
+
 

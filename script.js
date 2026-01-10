@@ -172,8 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function updateStars(rating, isHover = false) {
             stars.forEach((star, index) => {
-                // For hover: fill stars up to hovered one
-                // For selection: fill stars up to selected one
                 if (index < rating) {
                     star.classList.remove('fa-regular');
                     star.classList.add('fa-solid');
@@ -311,23 +309,48 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // Typewriter Effect
+    // Multi-Role Typewriter Effect
     const roleElement = document.querySelector('.role');
     if (roleElement) {
-        const text = roleElement.textContent;
-        roleElement.textContent = '';
-        let i = 0;
-        
-        const typeWriter = () => {
-            if (i < text.length) {
-                roleElement.textContent += text.charAt(i);
-                i++;
-                setTimeout(typeWriter, 100);
+        const roles = [
+            "Creative Developer & Designer",
+            "Web Developer",
+            "UI/UX Designer",
+            "Software Engineer",
+            "Problem Solver"
+        ];
+        let roleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 100;
+
+        const type = () => {
+            const currentRole = roles[roleIndex];
+            
+            if (isDeleting) {
+                roleElement.textContent = currentRole.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 50;
+            } else {
+                roleElement.textContent = currentRole.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 100;
             }
+
+            if (!isDeleting && charIndex === currentRole.length) {
+                isDeleting = true;
+                typeSpeed = 2000; // Pause at the end
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                roleIndex = (roleIndex + 1) % roles.length;
+                typeSpeed = 500; // Pause before next role
+            }
+
+            setTimeout(type, typeSpeed);
         };
 
-        // Start typing after a small delay
-        setTimeout(typeWriter, 500);
+        // Start effect
+        setTimeout(type, 1000);
     }
     // 3. Average Rating Logic (Percentage Filled)
     const updateAverageRating = async () => {
