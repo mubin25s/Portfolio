@@ -91,167 +91,105 @@ document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_ANON_KEY = 'sb_publishable_Q7r3Pd9GMh3_-kF8XyILZg_A8ZtJTul';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 1. Animated Gradient Mesh Background
+    // 1. Constellation Network Background
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
         let width, height;
-        let time = 0;
-        let gradientPoints = [];
-        let mouse = { x: width / 2, y: height / 2 };
+        let particles = [];
+        const particleCount = 100;
+        const maxDistance = 150;
+        const mouse = { x: null, y: null, radius: 150 };
 
-        // Resize
         const resize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            mouse.x = width / 2;
-            mouse.y = height / 2;
-            initGradientPoints();
+            initParticles();
         };
 
-        // Gradient Point Class
-        class GradientPoint {
-            constructor(x, y, index) {
-                this.baseX = x;
-                this.baseY = y;
-                this.x = x;
-                this.y = y;
-                this.index = index;
-                this.radius = Math.random() * 200 + 150;
-                this.speed = Math.random() * 0.0005 + 0.0002;
-                this.angle = Math.random() * Math.PI * 2;
-                this.color = index % 2 === 0 ? 
-                    { r: 0, g: 242, b: 255, a: 0.03 } : // Cyan
-                    { r: 112, g: 0, b: 255, a: 0.03 };  // Purple
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.dx = (Math.random() - 0.5) * 1.5;
+                this.dy = (Math.random() - 0.5) * 1.5;
+                this.radius = Math.random() * 2 + 1;
             }
 
             update() {
-                // Circular motion
-                this.angle += this.speed;
-                const offsetX = Math.cos(this.angle + time * 0.5) * 30;
-                const offsetY = Math.sin(this.angle + time * 0.5) * 30;
-                
-                this.x = this.baseX + offsetX;
-                this.y = this.baseY + offsetY;
+                if (this.x > width || this.x < 0) this.dx = -this.dx;
+                if (this.y > height || this.y < 0) this.dy = -this.dy;
 
                 // Mouse influence
-                if (mouse.x !== null && mouse.y !== null) {
-                    const dx = mouse.x - this.x;
-                    const dy = mouse.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 300) {
-                        const force = (300 - distance) / 300 * 20;
-                        this.x += (dx / distance) * force;
-                        this.y += (dy / distance) * force;
+                if (mouse.x !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= dx * force * 0.05;
+                        this.y -= dy * force * 0.05;
                     }
                 }
+
+                this.x += this.dx;
+                this.y += this.dy;
             }
 
             draw() {
-                const gradient = ctx.createRadialGradient(
-                    this.x, this.y, 0,
-                    this.x, this.y, this.radius
-                );
-
-                gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a})`);
-                gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a * 0.5})`);
-                gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
-
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, width, height);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
+                ctx.fill();
             }
         }
 
-        const initGradientPoints = () => {
-            gradientPoints = [];
-            const cols = 4;
-            const rows = 3;
-            const spacingX = width / (cols + 1);
-            const spacingY = height / (rows + 1);
-
-            let index = 0;
-            for (let row = 1; row <= rows; row++) {
-                for (let col = 1; col <= cols; col++) {
-                    const x = col * spacingX;
-                    const y = row * spacingY;
-                    gradientPoints.push(new GradientPoint(x, y, index++));
-                }
+        const initParticles = () => {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
             }
         };
 
-        const drawGrid = () => {
-            // Ultra-subtle grid overlay
-            ctx.strokeStyle = 'rgba(0, 242, 255, 0.02)';
-            ctx.lineWidth = 1;
+        const drawLines = () => {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
 
-            const spacing = 50;
-            
-            // Vertical lines
-            for (let x = 0; x < width; x += spacing) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, height);
-                ctx.stroke();
-            }
-
-            // Horizontal lines
-            for (let y = 0; y < height; y += spacing) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
-            }
-        };
-
-        const drawNoise = () => {
-            // Add subtle noise texture for depth
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-
-            for (let i = 0; i < data.length; i += 4) {
-                if (Math.random() > 0.98) {
-                    const noise = Math.random() * 10;
-                    data[i] += noise;     // R
-                    data[i + 1] += noise; // G
-                    data[i + 2] += noise; // B
+                    if (distance < maxDistance) {
+                        const opacity = 1 - (distance / maxDistance);
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 242, 255, ${opacity * 0.2})`;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
                 }
             }
-
-            ctx.putImageData(imageData, 0, 0);
         };
 
         const animate = () => {
-            time += 0.01;
+            ctx.clearRect(0, 0, width, height);
 
-            // Clear with base color
-            ctx.fillStyle = '#030303';
-            ctx.fillRect(0, 0, width, height);
-
-            // Draw gradient points (layered)
-            gradientPoints.forEach(point => {
-                point.update();
-                point.draw();
+            particles.forEach(p => {
+                p.update();
+                p.draw();
             });
-
-            // Optional: Add subtle grid
-            // drawGrid();
-
-            // Optional: Add film grain effect (comment out if too heavy)
-            // if (Math.random() > 0.95) drawNoise();
-
+            drawLines();
             requestAnimationFrame(animate);
         };
 
-        // Mouse tracking
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
         });
 
         window.addEventListener('mouseleave', () => {
-            mouse.x = width / 2;
-            mouse.y = height / 2;
+            mouse.x = null;
+            mouse.y = null;
         });
 
         window.addEventListener('resize', resize);

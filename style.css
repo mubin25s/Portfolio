@@ -338,6 +338,7 @@ h1, h2, h3 {
     background: linear-gradient(to right, #fff 20%, #777 40%, #777 60%, #fff 80%);
     background-size: 200% auto;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shimmer 5s linear infinite;
 }
