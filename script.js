@@ -91,119 +91,135 @@ document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_ANON_KEY = 'sb_publishable_Q7r3Pd9GMh3_-kF8XyILZg_A8ZtJTul';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 1. Constellation Network Background Effect
+    // 1. Matrix Rain Background Effect
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
         let width, height;
-        let particles = [];
-        const particleCount = 80;
-        let mouse = { x: null, y: null, radius: 150 };
+        let columns = [];
+        let columnCount;
+        const fontSize = 14;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*(){}[]<>/\\|';
+        let mouse = { x: null, y: null };
 
         // Resize
         const resize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            initParticles();
+            columnCount = Math.floor(width / fontSize);
+            initColumns();
         };
 
-        // Particle Class
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2 + 1;
+        // Column Class
+        class Column {
+            constructor(x) {
+                this.x = x;
+                this.y = Math.random() * -height;
+                this.speed = Math.random() * 3 + 2;
+                this.chars = [];
+                this.length = Math.floor(Math.random() * 20) + 10;
+                
+                // Generate random characters for this column
+                for (let i = 0; i < this.length; i++) {
+                    this.chars.push(chars[Math.floor(Math.random() * chars.length)]);
+                }
             }
 
             update() {
-                // Mouse repulsion
-                if (mouse.x != null && mouse.y != null) {
-                    const dx = this.x - mouse.x;
+                this.y += this.speed;
+                
+                // Mouse interaction - slow down near mouse
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = this.x * fontSize - mouse.x;
                     const dy = this.y - mouse.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < mouse.radius) {
-                        const force = (mouse.radius - distance) / mouse.radius;
-                        const angle = Math.atan2(dy, dx);
-                        this.vx += Math.cos(angle) * force * 0.5;
-                        this.vy += Math.sin(angle) * force * 0.5;
+                    if (distance < 150) {
+                        this.speed = 0.5;
+                    } else {
+                        this.speed = Math.random() * 3 + 2;
                     }
                 }
 
-                // Apply velocity
-                this.x += this.vx;
-                this.y += this.vy;
+                // Reset when off screen
+                if (this.y > height + this.length * fontSize) {
+                    this.y = Math.random() * -200;
+                    this.speed = Math.random() * 3 + 2;
+                    
+                    // Regenerate characters
+                    this.chars = [];
+                    this.length = Math.floor(Math.random() * 20) + 10;
+                    for (let i = 0; i < this.length; i++) {
+                        this.chars.push(chars[Math.floor(Math.random() * chars.length)]);
+                    }
+                }
 
-                // Damping
-                this.vx *= 0.98;
-                this.vy *= 0.98;
-
-                // Boundary wrapping
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
-
-                // Gentle drift back to original speed
-                if (Math.abs(this.vx) < 0.3) this.vx += (Math.random() - 0.5) * 0.02;
-                if (Math.abs(this.vy) < 0.3) this.vy += (Math.random() - 0.5) * 0.02;
+                // Occasionally change a character
+                if (Math.random() < 0.05) {
+                    const idx = Math.floor(Math.random() * this.chars.length);
+                    this.chars[idx] = chars[Math.floor(Math.random() * chars.length)];
+                }
             }
 
             draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 242, 255, 0.8)';
-                ctx.fill();
+                ctx.font = `${fontSize}px monospace`;
                 
-                // Add glow
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = 'rgba(0, 242, 255, 0.5)';
-                ctx.fill();
+                for (let i = 0; i < this.chars.length; i++) {
+                    const charY = this.y + i * fontSize;
+                    
+                    if (charY > 0 && charY < height) {
+                        // Calculate opacity based on position in trail
+                        const opacity = (this.chars.length - i) / this.chars.length;
+                        
+                        // Color gradient - cyan to purple
+                        const colorMix = i / this.chars.length;
+                        let color;
+                        
+                        if (colorMix < 0.3) {
+                            // Bright head - white/cyan
+                            color = `rgba(${Math.floor(255 * (1 - colorMix * 3))}, ${Math.floor(242 + 13 * colorMix * 3)}, 255, ${opacity})`;
+                        } else if (colorMix < 0.7) {
+                            // Middle - cyan
+                            color = `rgba(0, 242, 255, ${opacity * 0.8})`;
+                        } else {
+                            // Tail - purple fade
+                            const purpleMix = (colorMix - 0.7) / 0.3;
+                            color = `rgba(${Math.floor(112 * purpleMix)}, ${Math.floor(242 * (1 - purpleMix))}, 255, ${opacity * 0.6})`;
+                        }
+                        
+                        // Add glow to head
+                        if (i === 0) {
+                            ctx.shadowBlur = 10;
+                            ctx.shadowColor = 'rgba(0, 242, 255, 0.8)';
+                        } else {
+                            ctx.shadowBlur = 0;
+                        }
+                        
+                        ctx.fillStyle = color;
+                        ctx.fillText(this.chars[i], this.x * fontSize, charY);
+                    }
+                }
+                
                 ctx.shadowBlur = 0;
             }
         }
 
-        const initParticles = () => {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-        };
-
-        const drawConnections = () => {
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    // Draw connection if close enough
-                    if (distance < 150) {
-                        const opacity = (1 - distance / 150) * 0.5;
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(0, 242, 255, ${opacity})`;
-                        ctx.lineWidth = 1;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
+        const initColumns = () => {
+            columns = [];
+            for (let i = 0; i < columnCount; i++) {
+                columns.push(new Column(i));
             }
         };
 
         const animate = () => {
-            ctx.fillStyle = 'rgba(3, 3, 3, 1)';
+            // Fade effect instead of clear
+            ctx.fillStyle = 'rgba(3, 3, 3, 0.1)';
             ctx.fillRect(0, 0, width, height);
 
-            // Draw connections first (behind particles)
-            drawConnections();
-
-            // Update and draw particles
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
+            // Update and draw columns
+            columns.forEach(column => {
+                column.update();
+                column.draw();
             });
 
             requestAnimationFrame(animate);
