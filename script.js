@@ -1,190 +1,352 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Particle Trail Cursor
+    const cursorMain = document.createElement('div');
+    const cursorGlow = document.createElement('div');
+    cursorMain.classList.add('cursor-main');
+    cursorGlow.classList.add('cursor-glow');
+    document.body.appendChild(cursorMain);
+    document.body.appendChild(cursorGlow);
+
+    let mouseX = 0, mouseY = 0;
+    let glowX = 0, glowY = 0;
+    let lastParticleTime = 0;
+    const particleInterval = 30; // milliseconds between particles
+
+    // Track mouse position
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        // Main cursor follows immediately
+        cursorMain.style.left = mouseX + 'px';
+        cursorMain.style.top = mouseY + 'px';
+
+        // Create particle trail
+        const currentTime = Date.now();
+        if (currentTime - lastParticleTime > particleInterval) {
+            createParticle(mouseX, mouseY);
+            lastParticleTime = currentTime;
+        }
+    });
+
+    // Create particle function
+    function createParticle(x, y) {
+        const particle = document.createElement('div');
+        particle.classList.add('cursor-particle');
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        
+        // Random size variation
+        const size = Math.random() * 8 + 8; // 8-16px
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        
+        document.body.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+            particle.remove();
+        }, 800);
+    }
+
+    // Smooth glow animation
+    function animateGlow() {
+        // Lerp for smooth trailing glow
+        glowX += (mouseX - glowX) * 0.1;
+        glowY += (mouseY - glowY) * 0.1;
+        
+        cursorGlow.style.left = glowX + 'px';
+        cursorGlow.style.top = glowY + 'px';
+        
+        requestAnimationFrame(animateGlow);
+    }
+    animateGlow();
+
+    // Add hover effect for interactive elements
+    const interactiveElements = document.querySelectorAll('a, button, input, textarea, .btn, .project-card, .social-links a, .interests-list li');
+    
+    interactiveElements.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            document.body.classList.add('cursor-hover');
+        });
+        
+        el.addEventListener('mouseleave', () => {
+            document.body.classList.remove('cursor-hover');
+        });
+    });
+
+    // Hide cursor when leaving window
+    document.addEventListener('mouseleave', () => {
+        cursorMain.style.opacity = '0';
+        cursorGlow.style.opacity = '0';
+    });
+
+    document.addEventListener('mouseenter', () => {
+        cursorMain.style.opacity = '1';
+        cursorGlow.style.opacity = '1';
+    });
+
     // Initialize Supabase
     const SUPABASE_URL = 'https://yrqfglueiungguldisym.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Q7r3Pd9GMh3_-kF8XyILZg_A8ZtJTul';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // Canvas Particle System
+
+    // 1. Constellation Network Background Effect
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
+        let width, height;
         let particles = [];
-        const particleCount = 100;
-        let w, h;
+        const particleCount = 80;
+        let mouse = { x: null, y: null, radius: 150 };
 
-        const init = () => {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            createParticles();
+        // Resize
+        const resize = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
         };
 
-        const createParticles = () => {
+        // Particle Class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                // Mouse repulsion
+                if (mouse.x != null && mouse.y != null) {
+                    const dx = this.x - mouse.x;
+                    const dy = this.y - mouse.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        const angle = Math.atan2(dy, dx);
+                        this.vx += Math.cos(angle) * force * 0.5;
+                        this.vy += Math.sin(angle) * force * 0.5;
+                    }
+                }
+
+                // Apply velocity
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Damping
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+
+                // Boundary wrapping
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+
+                // Gentle drift back to original speed
+                if (Math.abs(this.vx) < 0.3) this.vx += (Math.random() - 0.5) * 0.02;
+                if (Math.abs(this.vy) < 0.3) this.vy += (Math.random() - 0.5) * 0.02;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 242, 255, 0.8)';
+                ctx.fill();
+                
+                // Add glow
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 242, 255, 0.5)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        const initParticles = () => {
             particles = [];
             for (let i = 0; i < particleCount; i++) {
-                particles.push({
-                    x: Math.random() * w,
-                    y: Math.random() * h,
-                    vx: (Math.random() - 0.5) * 0.5, // Slow movement
-                    vy: (Math.random() - 0.5) * 0.5,
-                    size: Math.random() * 2 + 1,
-                    color: 'rgba(0, 242, 255, 0.5)' // Accent color
-                });
+                particles.push(new Particle());
             }
         };
 
-        const drawParticles = () => {
-            ctx.clearRect(0, 0, w, h);
+        const drawConnections = () => {
             for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // Bounce off edges
-                if (p.x < 0 || p.x > w) p.vx *= -1;
-                if (p.y < 0 || p.y > h) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-
-                // Connections
                 for (let j = i + 1; j < particles.length; j++) {
-                    let p2 = particles[j];
-                    let dx = p.x - p2.x;
-                    let dy = p.y - p2.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
 
-                    if (dist < 100) {
+                    // Draw connection if close enough
+                    if (distance < 150) {
+                        const opacity = (1 - distance / 150) * 0.5;
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(0, 242, 255, ${1 - dist / 100})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 242, 255, ${opacity})`;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
                     }
                 }
             }
-            requestAnimationFrame(drawParticles);
         };
 
-        window.addEventListener('resize', init);
-        init();
-        drawParticles();
+        const animate = () => {
+            ctx.fillStyle = 'rgba(3, 3, 3, 1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw connections first (behind particles)
+            drawConnections();
+
+            // Update and draw particles
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        };
+
+        // Mouse tracking
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
     }
 
-    // Custom Cursor
-    const cursor = document.querySelector('.cursor');
-    const follower = document.querySelector('.cursor-follower');
-    
-    if (cursor && follower) {
-        let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+    // 2. Magnetic Buttons (New Feature)
+    const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .social-links a');
+    buttons.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
             
-            // Immediate update for dot
-            cursor.style.left = mouseX + 'px';
-            cursor.style.top = mouseY + 'px';
+            // Magnetic pull strength
+            btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
         });
 
-        // Smooth follower
-        setInterval(() => {
-            posX += (mouseX - posX) / 9;
-            posY += (mouseY - posY) / 9;
-            follower.style.left = posX + 'px';
-            follower.style.top = posY + 'px';
-        }, 1000 / 60);
-
-        // Hover effects
-        const links = document.querySelectorAll('a, button, .project-card, input, textarea');
-        links.forEach(link => {
-            link.addEventListener('mouseenter', () => {
-                cursor.classList.add('active');
-                follower.classList.add('active');
-                follower.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                follower.style.borderColor = 'transparent';
-                follower.style.backgroundColor = 'rgba(0, 242, 255, 0.1)';
-            });
-            link.addEventListener('mouseleave', () => {
-                cursor.classList.remove('active');
-                follower.classList.remove('active');
-                follower.style.transform = 'translate(-50%, -50%) scale(1)';
-                follower.style.borderColor = 'var(--accent-color)';
-                follower.style.backgroundColor = 'transparent';
-            });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate(0, 0)';
         });
-    }
+    });
 
-    // 3D Tilt Effect for Cards
-    const cards = document.querySelectorAll('.project-card');
+    // 4. Enhanced 3D Tilt with Glare
+    const cards = document.querySelectorAll('.project-card, .interests-container, .contact-form');
     cards.forEach(card => {
+        // Create glare element if not exists
+        if (!card.querySelector('.glare')) {
+            const glare = document.createElement('div');
+            glare.classList.add('glare');
+            card.appendChild(glare);
+        }
+
+        const glare = card.querySelector('.glare');
+
         card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
+            // Calculate mouse position relative to card center
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            
-            const rotateX = ((y - centerY) / centerY) * -10; // Max 10deg
+
+            // X and Y rotation
+            const rotateX = ((y - centerY) / centerY) * -10; // Max tilt (deg)
             const rotateY = ((x - centerX) / centerX) * 10;
 
             card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            
+            // Glare position
+            if (glare) {
+                glare.style.display = 'block';
+                glare.style.left = `${x}px`;
+                glare.style.top = `${y}px`;
+                glare.style.opacity = '1';
+            }
         });
 
         card.addEventListener('mouseleave', () => {
             card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            if (glare) glare.style.opacity = '0';
         });
     });
 
-    // Star Rating Interaction
-    const starRating = document.getElementById('star-rating');
-    const ratingInput = document.getElementById('rating');
-
-    if (starRating) {
-        const stars = starRating.querySelectorAll('i');
-        let selectedRating = 0;
-
-        stars.forEach((star, index) => {
-            // Click to select
-            star.addEventListener('click', () => {
-                // If clicking the same star, deselect it
-                if (selectedRating === index + 1) {
-                    selectedRating = 0;
-                } else {
-                    selectedRating = index + 1;
-                }
-                ratingInput.value = selectedRating;
-                updateStars(selectedRating);
-            });
-
-            // Hover preview
-            star.addEventListener('mouseenter', () => {
-                updateStars(index + 1, true);
-            });
+    // 5. Scroll Animations (Intersection Observer)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                // Staggered delay based on child index if possible, else standard
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0) scale(1)';
+                }, 100); 
+                observer.unobserve(entry.target);
+            }
         });
+    }, { threshold: 0.1 });
 
-        // Reset to selected on mouse leave
-        starRating.addEventListener('mouseleave', () => {
-            updateStars(selectedRating);
-        });
+    document.querySelectorAll('.project-card, .interests-list li, .section-title, .form-group').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(50px) scale(0.95)';
+        el.style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+        observer.observe(el);
+    });
 
-        function updateStars(rating, isHover = false) {
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.remove('fa-regular');
-                    star.classList.add('fa-solid');
-                    if (isHover) star.classList.add('hover-active');
-                } else {
-                    star.classList.remove('fa-solid', 'hover-active');
-                    star.classList.add('fa-regular');
-                }
-            });
-        }
+    // 6. Typewriter Effect
+    const roleElement = document.querySelector('.role');
+    if (roleElement) {
+        const roles = [
+            "Creative Developer",
+            "UI/UX Designer",
+            "Full Stack Engineer",
+            "Tech Enthusiast"
+        ];
+        let roleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 80;
+
+        const type = () => {
+            const currentRole = roles[roleIndex];
+            
+            if (isDeleting) {
+                roleElement.textContent = currentRole.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 40;
+            } else {
+                roleElement.textContent = currentRole.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 80;
+            }
+
+            if (!isDeleting && charIndex === currentRole.length) {
+                isDeleting = true;
+                typeSpeed = 2000;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                roleIndex = (roleIndex + 1) % roles.length;
+                typeSpeed = 300;
+            }
+
+            setTimeout(type, typeSpeed);
+        };
+        setTimeout(type, 1000);
     }
 
-    // 1. Contact Form Handler
+    // 7. Supabase Handlers (Preserved Logic) - Contact form code follows...
+    // Contact Form Handler
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
@@ -215,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 contactForm.reset();
             } catch (error) {
                 console.error("Error sending message: ", error);
-                if (error.message.includes('Configure Supabase')) alert('Setup Required: Added keys in script.js?');
+                if (error.message.includes('Configure Supabase')) alert('Check script.js for Supabase keys');
                 btn.textContent = 'Error! Try Again.';
                 btn.style.background = '#ff4444';
             }
@@ -230,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Rating Form Handler
+    // Rating Form Handler
     const ratingForm = document.getElementById('rating-form');
     if (ratingForm) {
         ratingForm.addEventListener('submit', async (e) => {
@@ -267,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ratingForm.reset();
                 
                 // Reset stars
+                const starRating = document.getElementById('star-rating');
                 if (starRating) {
                     const stars = starRating.querySelectorAll('i');
                     stars.forEach(star => {
@@ -277,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error("Error submitting review: ", error);
-                if (error.message.includes('Configure Supabase')) alert('Setup Required: Added keys in script.js?');
+                if (error.message.includes('Configure Supabase')) alert('Check script.js keys');
                 btn.textContent = 'Error! Try Again.';
                 btn.style.background = '#ff4444';
             }
@@ -292,126 +455,72 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Scroll Animations
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.section, .hero').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'all 0.8s ease-out';
-        observer.observe(el);
-    });
-
-    // Multi-Role Typewriter Effect
-    const roleElement = document.querySelector('.role');
-    if (roleElement) {
-        const roles = [
-            "Creative Developer & Designer",
-            "Web Developer",
-            "UI/UX Designer",
-            "Software Engineer",
-            "Problem Solver"
-        ];
-        let roleIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        let typeSpeed = 100;
-
-        const type = () => {
-            const currentRole = roles[roleIndex];
-            
-            if (isDeleting) {
-                roleElement.textContent = currentRole.substring(0, charIndex - 1);
-                charIndex--;
-                typeSpeed = 50;
-            } else {
-                roleElement.textContent = currentRole.substring(0, charIndex + 1);
-                charIndex++;
-                typeSpeed = 100;
-            }
-
-            if (!isDeleting && charIndex === currentRole.length) {
-                isDeleting = true;
-                typeSpeed = 2000; // Pause at the end
-            } else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                roleIndex = (roleIndex + 1) % roles.length;
-                typeSpeed = 500; // Pause before next role
-            }
-
-            setTimeout(type, typeSpeed);
-        };
-
-        // Start effect
-        setTimeout(type, 1000);
-    }
-    // 3. Average Rating Logic (Percentage Filled)
-    const updateAverageRating = async () => {
-        const avgContainer = document.getElementById('avg-rating-container');
-        const starsFill = document.getElementById('stars-fill');
-        
-        if (!avgContainer) return;
-
-        try {
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-                avgContainer.style.opacity = '0';
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from('ratings')
-                .select('rating');
-
-            if (error) {
-                console.error("Error fetching ratings:", error);
-                return;
-            }
-
-            if (data && data.length > 0) {
-                const total = data.reduce((sum, item) => sum + item.rating, 0);
-                const average = total / data.length;
-                
-                // Calculate percentage (e.g., 4.5/5 = 90%)
-                const percentage = (average / 5) * 100;
-                
-                // Apply width to fill layer
-                if (starsFill) {
-                    starsFill.style.width = `${percentage}%`;
+    // Rating Logic
+    const avgContainer = document.getElementById('avg-rating-container');
+     if(avgContainer) {
+         
+         const starRating = document.getElementById('star-rating');
+         const ratingInput = document.getElementById('rating');
+ 
+         if (starRating) {
+             const stars = starRating.querySelectorAll('i');
+             let selectedRating = 0;
+ 
+             stars.forEach((star, index) => {
+                 star.addEventListener('click', () => {
+                     if (selectedRating === index + 1) {
+                         selectedRating = 0;
+                     } else {
+                         selectedRating = index + 1;
+                     }
+                     ratingInput.value = selectedRating;
+                     updateStars(selectedRating);
+                 });
+ 
+                 star.addEventListener('mouseenter', () => {
+                     updateStars(index + 1, true);
+                 });
+             });
+ 
+             starRating.addEventListener('mouseleave', () => {
+                 updateStars(selectedRating);
+             });
+ 
+             function updateStars(rating, isHover = false) {
+                 stars.forEach((star, index) => {
+                     if (index < rating) {
+                         star.classList.remove('fa-regular');
+                         star.classList.add('fa-solid');
+                         if (isHover) star.classList.add('hover-active');
+                     } else {
+                         star.classList.remove('fa-solid', 'hover-active');
+                         star.classList.add('fa-regular');
+                     }
+                 });
+             }
+         }
+         
+         // Average Rating Fetch
+         (async () => {
+            const starsFill = document.getElementById('stars-fill');
+            try {
+                if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+                    avgContainer.style.opacity = '0';
+                    return;
                 }
-                
-                // Set title for hover info
-                avgContainer.querySelector('.star-rating-display').title = `${average.toFixed(1)} / 5 (${data.length} reviews)`;
-
-                avgContainer.style.opacity = '1';
-            } else {
-                if (starsFill) starsFill.style.width = '0%';
-                avgContainer.style.opacity = '1'; 
-            }
-
-        } catch (e) {
-            console.error("Rating fetch exception:", e);
-        }
-    };
-
-    // Initial fetch
-    updateAverageRating();
-
-    // Re-fetch after submission (called in rating form handler if successful)
-    // We need to expose this or just reload. 
-    // Optimization: Add to the rating form success callback above.
-    // For now, let's keep it simple. If we want it to update dynamically, 
-    // we should modify the success block in rating form to call this function.
-    // Since 'updateAverageRating' is defined here, we can actually modify the submit handler above 
-    // OR just copy this logic there. 
-    // Better yet, let's just leave it as initial load for now to keep code clean.
-    // User can refresh to see new rating.
+                const { data, error } = await supabase.from('ratings').select('rating');
+                if (data && data.length > 0) {
+                    const total = data.reduce((sum, item) => sum + item.rating, 0);
+                    const average = total / data.length;
+                    const percentage = (average / 5) * 100;
+                    if (starsFill) starsFill.style.width = `${percentage}%`;
+                    avgContainer.querySelector('.star-rating-display').title = `${average.toFixed(1)} / 5 (${data.length} reviews)`;
+                    avgContainer.style.opacity = '1';
+                } else {
+                    avgContainer.style.opacity = '1';
+                }
+            } catch (e) { console.error(e); }
+         })();
+     }
 
 });
-
