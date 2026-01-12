@@ -91,136 +91,154 @@ document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_ANON_KEY = 'sb_publishable_Q7r3Pd9GMh3_-kF8XyILZg_A8ZtJTul';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 1. Matrix Rain Background Effect
+    // 1. Animated Gradient Mesh Background
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
         let width, height;
-        let columns = [];
-        let columnCount;
-        const fontSize = 14;
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*(){}[]<>/\\|';
-        let mouse = { x: null, y: null };
+        let time = 0;
+        let gradientPoints = [];
+        let mouse = { x: width / 2, y: height / 2 };
 
         // Resize
         const resize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            columnCount = Math.floor(width / fontSize);
-            initColumns();
+            mouse.x = width / 2;
+            mouse.y = height / 2;
+            initGradientPoints();
         };
 
-        // Column Class
-        class Column {
-            constructor(x) {
+        // Gradient Point Class
+        class GradientPoint {
+            constructor(x, y, index) {
+                this.baseX = x;
+                this.baseY = y;
                 this.x = x;
-                this.y = Math.random() * -height;
-                this.speed = Math.random() * 3 + 2;
-                this.chars = [];
-                this.length = Math.floor(Math.random() * 20) + 10;
-                
-                // Generate random characters for this column
-                for (let i = 0; i < this.length; i++) {
-                    this.chars.push(chars[Math.floor(Math.random() * chars.length)]);
-                }
+                this.y = y;
+                this.index = index;
+                this.radius = Math.random() * 200 + 150;
+                this.speed = Math.random() * 0.0005 + 0.0002;
+                this.angle = Math.random() * Math.PI * 2;
+                this.color = index % 2 === 0 ? 
+                    { r: 0, g: 242, b: 255, a: 0.03 } : // Cyan
+                    { r: 112, g: 0, b: 255, a: 0.03 };  // Purple
             }
 
             update() {
-                this.y += this.speed;
+                // Circular motion
+                this.angle += this.speed;
+                const offsetX = Math.cos(this.angle + time * 0.5) * 30;
+                const offsetY = Math.sin(this.angle + time * 0.5) * 30;
                 
-                // Mouse interaction - slow down near mouse
+                this.x = this.baseX + offsetX;
+                this.y = this.baseY + offsetY;
+
+                // Mouse influence
                 if (mouse.x !== null && mouse.y !== null) {
-                    const dx = this.x * fontSize - mouse.x;
-                    const dy = this.y - mouse.y;
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < 150) {
-                        this.speed = 0.5;
-                    } else {
-                        this.speed = Math.random() * 3 + 2;
+                    if (distance < 300) {
+                        const force = (300 - distance) / 300 * 20;
+                        this.x += (dx / distance) * force;
+                        this.y += (dy / distance) * force;
                     }
-                }
-
-                // Reset when off screen
-                if (this.y > height + this.length * fontSize) {
-                    this.y = Math.random() * -200;
-                    this.speed = Math.random() * 3 + 2;
-                    
-                    // Regenerate characters
-                    this.chars = [];
-                    this.length = Math.floor(Math.random() * 20) + 10;
-                    for (let i = 0; i < this.length; i++) {
-                        this.chars.push(chars[Math.floor(Math.random() * chars.length)]);
-                    }
-                }
-
-                // Occasionally change a character
-                if (Math.random() < 0.05) {
-                    const idx = Math.floor(Math.random() * this.chars.length);
-                    this.chars[idx] = chars[Math.floor(Math.random() * chars.length)];
                 }
             }
 
             draw() {
-                ctx.font = `${fontSize}px monospace`;
-                
-                for (let i = 0; i < this.chars.length; i++) {
-                    const charY = this.y + i * fontSize;
-                    
-                    if (charY > 0 && charY < height) {
-                        // Calculate opacity based on position in trail
-                        const opacity = (this.chars.length - i) / this.chars.length;
-                        
-                        // Color gradient - cyan to purple
-                        const colorMix = i / this.chars.length;
-                        let color;
-                        
-                        if (colorMix < 0.3) {
-                            // Bright head - white/cyan
-                            color = `rgba(${Math.floor(255 * (1 - colorMix * 3))}, ${Math.floor(242 + 13 * colorMix * 3)}, 255, ${opacity})`;
-                        } else if (colorMix < 0.7) {
-                            // Middle - cyan
-                            color = `rgba(0, 242, 255, ${opacity * 0.8})`;
-                        } else {
-                            // Tail - purple fade
-                            const purpleMix = (colorMix - 0.7) / 0.3;
-                            color = `rgba(${Math.floor(112 * purpleMix)}, ${Math.floor(242 * (1 - purpleMix))}, 255, ${opacity * 0.6})`;
-                        }
-                        
-                        // Add glow to head
-                        if (i === 0) {
-                            ctx.shadowBlur = 10;
-                            ctx.shadowColor = 'rgba(0, 242, 255, 0.8)';
-                        } else {
-                            ctx.shadowBlur = 0;
-                        }
-                        
-                        ctx.fillStyle = color;
-                        ctx.fillText(this.chars[i], this.x * fontSize, charY);
-                    }
-                }
-                
-                ctx.shadowBlur = 0;
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.radius
+                );
+
+                gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a})`);
+                gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a * 0.5})`);
+                gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
             }
         }
 
-        const initColumns = () => {
-            columns = [];
-            for (let i = 0; i < columnCount; i++) {
-                columns.push(new Column(i));
+        const initGradientPoints = () => {
+            gradientPoints = [];
+            const cols = 4;
+            const rows = 3;
+            const spacingX = width / (cols + 1);
+            const spacingY = height / (rows + 1);
+
+            let index = 0;
+            for (let row = 1; row <= rows; row++) {
+                for (let col = 1; col <= cols; col++) {
+                    const x = col * spacingX;
+                    const y = row * spacingY;
+                    gradientPoints.push(new GradientPoint(x, y, index++));
+                }
             }
         };
 
+        const drawGrid = () => {
+            // Ultra-subtle grid overlay
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.02)';
+            ctx.lineWidth = 1;
+
+            const spacing = 50;
+            
+            // Vertical lines
+            for (let x = 0; x < width; x += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = 0; y < height; y += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+        };
+
+        const drawNoise = () => {
+            // Add subtle noise texture for depth
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                if (Math.random() > 0.98) {
+                    const noise = Math.random() * 10;
+                    data[i] += noise;     // R
+                    data[i + 1] += noise; // G
+                    data[i + 2] += noise; // B
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        };
+
         const animate = () => {
-            // Fade effect instead of clear
-            ctx.fillStyle = 'rgba(3, 3, 3, 0.1)';
+            time += 0.01;
+
+            // Clear with base color
+            ctx.fillStyle = '#030303';
             ctx.fillRect(0, 0, width, height);
 
-            // Update and draw columns
-            columns.forEach(column => {
-                column.update();
-                column.draw();
+            // Draw gradient points (layered)
+            gradientPoints.forEach(point => {
+                point.update();
+                point.draw();
             });
+
+            // Optional: Add subtle grid
+            // drawGrid();
+
+            // Optional: Add film grain effect (comment out if too heavy)
+            // if (Math.random() > 0.95) drawNoise();
 
             requestAnimationFrame(animate);
         };
@@ -232,8 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         window.addEventListener('mouseleave', () => {
-            mouse.x = null;
-            mouse.y = null;
+            mouse.x = width / 2;
+            mouse.y = height / 2;
         });
 
         window.addEventListener('resize', resize);
