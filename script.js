@@ -278,17 +278,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fade in carousel container once
     const carouselContainer = document.querySelector('.carousel-container');
-    if (carouselContainer) {
+    const carousel = document.querySelector('.projects-carousel');
+    
+    if (carouselContainer && carousel) {
+        // Init visibility
         carouselContainer.style.opacity = '0';
         carouselContainer.style.transition = 'opacity 1s ease-out';
         
         const carouselObserver = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
                 carouselContainer.style.opacity = '1';
-                carouselObserver.unobserve(carouselContainer);
+                startAnimation();
+            } else {
+                stopAnimation();
             }
         }, { threshold: 0.1 });
         carouselObserver.observe(carouselContainer);
+
+        // State
+        let isDown = false;
+        let startX;
+        let currentTranslate = 0;
+        let animationID;
+        let speed = 1.0; // Slightly faster pixels per frame (smooth at 60fps)
+        
+        // Calculate the "loop" point
+        // Since we duplicated content, it's half the width
+        let maxTranslate = 0;
+        const updateMaxTranslate = () => {
+            maxTranslate = carousel.scrollWidth / 2;
+        };
+        window.addEventListener('resize', updateMaxTranslate);
+        updateMaxTranslate();
+
+        function animate() {
+            if (!isDown) {
+                currentTranslate -= speed;
+                
+                // Wrap around
+                if (Math.abs(currentTranslate) >= maxTranslate) {
+                    currentTranslate = 0;
+                }
+                
+                carousel.style.transform = `translateX(${currentTranslate}px)`;
+            }
+            animationID = requestAnimationFrame(animate);
+        }
+
+        function startAnimation() {
+            if (!animationID) animate();
+        }
+
+        function stopAnimation() {
+            cancelAnimationFrame(animationID);
+            animationID = null;
+        }
+
+        // Swipe / Drag Logic
+        const onStart = (e) => {
+            isDown = true;
+            carousel.classList.add('is-dragging');
+            
+            // Get initial X
+            const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+            startX = x - currentTranslate;
+        };
+
+        const onMove = (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            
+            const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+            const walk = x - startX;
+            
+            currentTranslate = walk;
+            
+            // Boundary checks for smooth looping during drag
+            if (currentTranslate > 0) {
+                currentTranslate = -maxTranslate;
+                startX = x - currentTranslate;
+            } else if (Math.abs(currentTranslate) >= maxTranslate) {
+                currentTranslate = 0;
+                startX = x - currentTranslate;
+            }
+            
+            carousel.style.transform = `translateX(${currentTranslate}px)`;
+        };
+
+        const onEnd = () => {
+            isDown = false;
+            carousel.classList.remove('is-dragging');
+        };
+
+        // Mouse Events
+        carousel.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        // Touch Events
+        carousel.addEventListener('touchstart', onStart, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+        
+        // Initial setup
+        updateMaxTranslate();
     }
 
     // 6. Typewriter Effect

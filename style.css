@@ -13,6 +13,10 @@
     --follower-size: 40px;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -458,7 +462,16 @@ h1, h2, h3 {
     z-index: 1;
 }
 
+#showcase {
+    padding-top: 60px; /* Reduced from default section padding */
+}
+
+#showcase .section-title {
+    margin-bottom: 0.5rem; /* Reduced from 1.5rem for a micro-nudge */
+}
+
 .carousel-container {
+    padding-top: 30px; /* Reduced padding to lift cards further */
     width: 100vw;
     position: relative;
     left: 50%;
@@ -475,23 +488,24 @@ h1, h2, h3 {
     display: flex;
     gap: 3rem;
     width: max-content;
-    animation: scroll 40s linear infinite;
     padding-left: 3rem;
     will-change: transform;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
-.projects-carousel:hover {
-    animation-play-state: paused;
+@media (prefers-reduced-motion: reduce) {
+    .projects-carousel {
+        transition: none;
+    }
 }
 
-@keyframes scroll {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(calc(-50% - 1.5rem)); /* Half of the total width + half of gap */
-    }
+.projects-carousel:active {
+    cursor: grabbing;
 }
+
+/* Removed @keyframes scroll as we'll use JS for the loop */
 
 .project-card {
     flex: 0 0 400px; /* Fixed width for better carousel consistency */
