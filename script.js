@@ -269,12 +269,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, { threshold: 0.1 });
 
-    document.querySelectorAll('.project-card, .interests-list li, .section-title, .form-group').forEach(el => {
+    document.querySelectorAll('.interests-list li, .section-title, .form-group').forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(50px) scale(0.95)';
         el.style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
         observer.observe(el);
     });
+
+    // Fade in carousel container once
+    const carouselContainer = document.querySelector('.carousel-container');
+    if (carouselContainer) {
+        carouselContainer.style.opacity = '0';
+        carouselContainer.style.transition = 'opacity 1s ease-out';
+        
+        const carouselObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                carouselContainer.style.opacity = '1';
+                carouselObserver.unobserve(carouselContainer);
+            }
+        }, { threshold: 0.1 });
+        carouselObserver.observe(carouselContainer);
+    }
 
     // 6. Typewriter Effect
     const roleElement = document.querySelector('.role');
