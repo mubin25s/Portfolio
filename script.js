@@ -379,6 +379,37 @@ document.addEventListener('DOMContentLoaded', () => {
         carousel.addEventListener('touchstart', onStart, { passive: true });
         window.addEventListener('touchmove', onMove, { passive: false });
         window.addEventListener('touchend', onEnd);
+
+        // Trackpad / Wheel Scroll
+        carouselContainer.addEventListener('wheel', (e) => {
+            // Check if horizontal scroll is dominant or if there's any vertical scroll
+            // We want to capture both for naturally navigating the carousel
+            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+            
+            // Manual update
+            currentTranslate -= delta * 0.8; // Adjust sensitivity
+            
+            // Immediate wrap around for infinite feel
+            if (currentTranslate > 0) {
+                currentTranslate = -maxTranslate;
+            } else if (Math.abs(currentTranslate) >= maxTranslate) {
+                currentTranslate = 0;
+            }
+            
+            carousel.style.transform = `translateX(${currentTranslate}px)`;
+            
+            // Set isDown to true temporarily to pause auto-animation while scrolling
+            isDown = true;
+            clearTimeout(this.wheelTimeout);
+            this.wheelTimeout = setTimeout(() => {
+                isDown = false;
+            }, 150); // Resume auto-scroll quickly after stopping
+            
+            // Prevent page vertical scroll if the movement is primarily horizontal
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
         
         // Initial setup
         updateMaxTranslate();
