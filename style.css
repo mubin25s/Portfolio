@@ -905,7 +905,7 @@ h1, h2, h3 {
 }
 
 .interests-list li {
-    background: rgba(255, 255, 255, 0.03);
+    /* background: rgba(255, 255, 255, 0.03); Removed */
     padding: 14px 30px;
     border-radius: 50px;
     color: var(--text-secondary);
@@ -914,7 +914,36 @@ h1, h2, h3 {
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     overflow: hidden;
+    z-index: 1;
+    isolation: isolate;
 }
+
+.interests-list li::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.03);
+    z-index: -2;
+}
+
+.interests-list li::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--fill, 0%);
+    background: linear-gradient(to right, var(--accent-color) 20%, #004e59 40%, #004e59 60%, var(--accent-color) 80%);
+    background-size: 200% auto;
+    opacity: 0.8;
+    z-index: -1;
+    transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 0 20px var(--accent-glow);
+    border-radius: 50px;
+    animation: shimmer 3s linear infinite;
+}
+
+/* @keyframes gradientFlow removed as we are using shimmer now */
 
 .interests-list li:hover {
     border-color: var(--accent-color);
@@ -1361,3 +1390,11 @@ body {
 
 
 
+/ *   R e s p o n s i v e   L a n g u a g e   g r o u p i n g   * / 
+ . m o b i l e - c o m b   {   d i s p l a y :   n o n e ;   } 
+ @ m e d i a   ( m a x - w i d t h :   9 9 2 p x )   { 
+     . d e s k t o p - s i n g l e   {   d i s p l a y :   n o n e ;   } 
+     . m o b i l e - c o m b   {   d i s p l a y :   b l o c k ;   } 
+ } 
+ 
+ 
