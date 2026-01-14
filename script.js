@@ -296,14 +296,16 @@ document.addEventListener('DOMContentLoaded', () => {
         carouselObserver.observe(carouselContainer);
 
         // State
-        let isDown = false;
+        let isDown = false; 
         let startX;
+        let startY;
         let currentTranslate = 0;
         let animationID;
-        let speed = 1.0; // Slightly faster pixels per frame (smooth at 60fps)
+        let speed = 1.0; 
+        let isVerticalSwipe = false;
+        let isStopped = false; 
         
         // Calculate the "loop" point
-        // Since we duplicated content, it's half the width
         let maxTranslate = 0;
         const updateMaxTranslate = () => {
             maxTranslate = carousel.scrollWidth / 2;
@@ -312,7 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMaxTranslate();
 
         function animate() {
-            if (!isDown) {
+            // Auto-scroll only if not being dragging or stopped by modal
+            if (!isDown && !isStopped) {
                 currentTranslate -= speed;
                 
                 // Wrap around
@@ -337,23 +340,48 @@ document.addEventListener('DOMContentLoaded', () => {
         // Swipe / Drag Logic
         const onStart = (e) => {
             isDown = true;
+            isVerticalSwipe = false;
             carousel.classList.add('is-dragging');
-            
-            // Get initial X
             const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+            const y = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY;
             startX = x - currentTranslate;
+            startY = y;
         };
 
         const onMove = (e) => {
             if (!isDown) return;
-            e.preventDefault();
-            
+
+            // Safety: Detect if mouse was released outside window
+            if (e.type.includes('mouse') && e.buttons === 0) {
+                onEnd();
+                return;
+            }
+
             const x = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-            const walk = x - startX;
+            const y = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY;
             
+            const deltaX = Math.abs(x - (startX + currentTranslate));
+            const deltaY = Math.abs(y - startY);
+
+            // If user is swiping vertically, release the carousel and let browser handle scroll
+            if (e.type.includes('touch') && deltaY > deltaX && !isVerticalSwipe) {
+                isVerticalSwipe = true;
+                isDown = false;
+                carousel.classList.remove('is-dragging');
+                return;
+            }
+
+            if (isVerticalSwipe) return;
+
+            // Only prevent default if we are certain it's a horizontal swipe
+            if (deltaX > 5) {
+                if (e.cancelable) e.preventDefault();
+            }
+
+            const walk = x - startX;
             currentTranslate = walk;
             
-            // Boundary checks for smooth looping during drag
+            // Wrap logic for dragging
             if (currentTranslate > 0) {
                 currentTranslate = -maxTranslate;
                 startX = x - currentTranslate;
@@ -361,58 +389,116 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentTranslate = 0;
                 startX = x - currentTranslate;
             }
-            
             carousel.style.transform = `translateX(${currentTranslate}px)`;
         };
 
         const onEnd = () => {
             isDown = false;
+            isVerticalSwipe = false;
             carousel.classList.remove('is-dragging');
         };
 
+        // Modal Elements
+        const modal = document.getElementById("project-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalDesc = document.getElementById("modal-description");
+        const modalImg = document.getElementById("modal-project-image");
+        const modalLinks = document.getElementById("modal-links");
+        const modalTags = document.getElementById("modal-tags");
+        const closeModal = document.querySelector(".close-modal");
+
+        // Click to open modal
+        carousel.addEventListener('click', (e) => {
+            const card = e.target.closest('.project-card');
+            if (card) {
+                if (e.target.tagName === 'A') return;
+                
+                isStopped = true; // Pause carousel
+                const title = card.querySelector('h3').innerText;
+                const desc = card.querySelector('p').innerText;
+                const imgSrc = card.getAttribute('data-image') || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f';
+                const links = card.querySelector('.card-links');
+                const tags = card.querySelector('.tags');
+
+                modalTitle.innerText = title;
+                modalDesc.innerText = desc;
+                modalImg.src = imgSrc;
+                
+                // Clone tags to modal
+                modalTags.innerHTML = '';
+                if (tags) {
+                    const originalTags = tags.querySelectorAll('span');
+                    originalTags.forEach(tag => {
+                        const newTag = tag.cloneNode(true);
+                        modalTags.appendChild(newTag);
+                    });
+                }
+
+                // Clone links to modal actions
+                modalLinks.innerHTML = '';
+                if (links) {
+                    const originalLinks = links.querySelectorAll('a');
+                    originalLinks.forEach(link => {
+                        const newLink = link.cloneNode(true);
+                        modalLinks.appendChild(newLink);
+                    });
+                }
+
+                modal.style.display = "block";
+                document.body.classList.add('modal-open');
+            }
+        });
+
+        // Close Modal
+        const closeMod = () => {
+            modal.style.display = "none";
+            document.body.classList.remove('modal-open');
+            isStopped = false; // Resume carousel
+        };
+
+        if (closeModal) closeModal.onclick = closeMod;
+        window.onclick = (event) => { if (event.target == modal) closeMod(); };
+        
         // Mouse Events
         carousel.addEventListener('mousedown', onStart);
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onEnd);
+        carouselContainer.addEventListener('mouseleave', onEnd);
 
         // Touch Events
         carousel.addEventListener('touchstart', onStart, { passive: true });
         window.addEventListener('touchmove', onMove, { passive: false });
         window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
 
-        // Trackpad / Wheel Scroll
+        // Trackpad / Wheel Scroll - ONLY Horizontal
         carouselContainer.addEventListener('wheel', (e) => {
-            // Check if horizontal scroll is dominant or if there's any vertical scroll
-            // We want to capture both for naturally navigating the carousel
-            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-            
-            // Manual update
-            currentTranslate -= delta * 0.8; // Adjust sensitivity
-            
-            // Immediate wrap around for infinite feel
-            if (currentTranslate > 0) {
-                currentTranslate = -maxTranslate;
-            } else if (Math.abs(currentTranslate) >= maxTranslate) {
-                currentTranslate = 0;
-            }
-            
-            carousel.style.transform = `translateX(${currentTranslate}px)`;
-            
-            // Set isDown to true temporarily to pause auto-animation while scrolling
-            isDown = true;
-            clearTimeout(this.wheelTimeout);
-            this.wheelTimeout = setTimeout(() => {
-                isDown = false;
-            }, 150); // Resume auto-scroll quickly after stopping
-            
-            // Prevent page vertical scroll if the movement is primarily horizontal
+            // If deltaX is significant, it's a horizontal trackpad swipe
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
                 e.preventDefault();
+                currentTranslate -= e.deltaX * 1.2;
+                
+                if (currentTranslate > 0) {
+                    currentTranslate = -maxTranslate;
+                } else if (Math.abs(currentTranslate) >= maxTranslate) {
+                    currentTranslate = 0;
+                }
+                
+                carousel.style.transform = `translateX(${currentTranslate}px)`;
+                
+                // Pause auto-scroll briefly
+                isDown = true;
+                clearTimeout(this.wheelTimeout);
+                this.wheelTimeout = setTimeout(() => {
+                    isDown = false;
+                }, 100);
             }
+            // else: Do nothing, let vertical scroll happen naturally
         }, { passive: false });
         
         // Initial setup
         updateMaxTranslate();
+        startAnimation();
     }
 
     // 6. Typewriter Effect
