@@ -505,7 +505,7 @@ h1, h2, h3 {
 }
 
 .name {
-    font-size: 4.5rem;
+    font-size: 4rem;
     margin-bottom: 0.5rem;
     line-height: 1.1;
     font-weight: 900;
@@ -1239,7 +1239,7 @@ body {
 
 @media (max-width: 480px) {
     .name {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
     }
 
     .role {
