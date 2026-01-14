@@ -1421,11 +1421,9 @@ body {
 
 
 
-/ *   R e s p o n s i v e   L a n g u a g e   g r o u p i n g   * / 
- . m o b i l e - c o m b   {   d i s p l a y :   n o n e ;   } 
- @ m e d i a   ( m a x - w i d t h :   9 9 2 p x )   { 
-     . d e s k t o p - s i n g l e   {   d i s p l a y :   n o n e ;   } 
-     . m o b i l e - c o m b   {   d i s p l a y :   b l o c k ;   } 
- } 
- 
- 
+/* Responsive Language grouping */
+.mobile-comb { display: none; }
+@media (max-width: 992px) {
+    .desktop-single { display: none; }
+    .mobile-comb { display: block; }
+}
