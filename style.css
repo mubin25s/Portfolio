@@ -95,6 +95,20 @@ body.cursor-hover .cursor-glow {
     background: radial-gradient(circle, rgba(112, 0, 255, 0.18) 0%, transparent 70%);
 }
 
+/* Small hover state for social links */
+body.cursor-small-hover .cursor-main {
+    transform: translate(-50%, -50%) scale(0.6);
+    background: var(--accent-secondary);
+    box-shadow: 0 0 10px rgba(112, 0, 255, 0.4),
+                inset 0 0 5px rgba(255, 255, 255, 0.4);
+}
+
+body.cursor-small-hover .cursor-glow {
+    width: 25px;
+    height: 25px;
+    background: radial-gradient(circle, rgba(112, 0, 255, 0.12) 0%, transparent 70%);
+}
+
 /* Hide cursor on touch devices */
 @media (hover: none) and (pointer: coarse) {
     body {

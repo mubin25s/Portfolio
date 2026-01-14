@@ -63,15 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
     animateGlow();
 
     // Add hover effect for interactive elements
-    const interactiveElements = document.querySelectorAll('a, button, input, textarea, .btn, .project-card, .social-links a, .interests-list li');
+    const interactiveElements = document.querySelectorAll('a, button, input, textarea, .btn, .project-card, .interests-list li');
     
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => {
-            document.body.classList.add('cursor-hover');
+            if (el.closest('.social-links')) {
+                document.body.classList.add('cursor-small-hover');
+            } else {
+                document.body.classList.add('cursor-hover');
+            }
         });
         
         el.addEventListener('mouseleave', () => {
             document.body.classList.remove('cursor-hover');
+            document.body.classList.remove('cursor-small-hover');
         });
     });
 
