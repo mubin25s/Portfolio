@@ -511,13 +511,28 @@ h1, h2, h3 {
     font-weight: 900;
     color: #fff;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-    /* Shimmer Effect */
-    background: linear-gradient(to right, #fff 20%, #777 40%, #777 60%, #fff 80%);
+}
+
+.name-white {
+    color: #fff;
+    /* Optional: Shimmer on white part */
+    background: linear-gradient(to right, #fff 20%, #ccc 40%, #ccc 60%, #fff 80%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shimmer 5s linear infinite;
+}
+
+.name-accent {
+    color: var(--accent-color);
+    background: linear-gradient(to right, var(--accent-color) 20%, #fff 40%, #fff 60%, var(--accent-color) 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 5s linear infinite;
+    text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
 }
 
 @keyframes shimmer {
