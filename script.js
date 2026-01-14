@@ -725,4 +725,18 @@ document.addEventListener('DOMContentLoaded', () => {
          })();
      }
 
+    // 8. Progress Bar Scroll Animation
+    const progressObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+                progressObserver.unobserve(entry.target); // Animate only once
+            }
+        });
+    }, { threshold: 0.2 }); // Trigger when 20% visible
+
+    document.querySelectorAll('.interests-list li').forEach(li => {
+        progressObserver.observe(li);
+    });
+
 });
