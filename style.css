@@ -844,6 +844,23 @@ h1, h2, h3 {
     transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Shadow Border Neon Class */
+.shadow-border {
+    border: 1px solid rgba(0, 242, 255, 0.25) !important;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5),
+                0 0 20px rgba(0, 242, 255, 0.1),
+                inset 0 0 15px rgba(0, 242, 255, 0.05) !important;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+.shadow-border:hover {
+    transform: translateY(-5px) scale(1.005);
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5),
+                0 0 35px rgba(0, 242, 255, 0.25),
+                inset 0 0 20px rgba(0, 242, 255, 0.1) !important;
+}
+
 .interests-container:hover {
     transform: translateY(-5px);
     border-color: var(--accent-color);
