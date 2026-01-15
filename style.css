@@ -1429,7 +1429,7 @@ body {
 }
 /* Resume Link - Top Right */
 .resume-link {
-    position: fixed;
+    position: absolute;
     top: 30px;
     right: 40px;
     z-index: 2000;
