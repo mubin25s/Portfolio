@@ -11,9 +11,6 @@ My personal portfolio website showcasing **projects, skills, and experience**.
 - Project highlights
 - Clean and modern layout
 
-## 🔗 Live Demo
-👉 https://mubin25s.github.io/Portfolio/
-
 ## 🛠️ Technologies
 HTML • CSS • JavaScript • Supabase
 
