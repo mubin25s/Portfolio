@@ -3,7 +3,7 @@
 Welcome to my **Personal Portfolio Website** — a clean, modern, and responsive web presence built to showcase my **skills**, **projects**, and **experience** as a developer.
 
 🔗 **View Live Portfolio:**  
-👉 https://mubin25s.github.io/Portfolio/ :contentReference[oaicite:1]{index=1}
+👉 https://mubin25s.github.io/Portfolio/
 
 ---
 
