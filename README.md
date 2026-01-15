@@ -39,7 +39,8 @@ The portfolio is intended for:
 
 - HTML5  
 - CSS3  
-- JavaScript  
+- JavaScript
+- Supabase for Database  
 - Responsive Web Design  
 - GitHub Pages (for deployment)
 
