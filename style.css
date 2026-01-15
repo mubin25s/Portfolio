@@ -1427,3 +1427,44 @@ body {
     .desktop-single { display: none; }
     .mobile-comb { display: block; }
 }
+/* Resume Link - Top Right */
+.resume-link {
+    position: fixed;
+    top: 30px;
+    right: 40px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.resume-link i {
+    font-size: 1.1rem;
+}
+
+.resume-link:hover {
+    color: var(--accent-color);
+    background: rgba(0, 242, 255, 0.08);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 242, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+    .resume-link {
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
