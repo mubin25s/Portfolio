@@ -7,96 +7,72 @@ Welcome to my **Personal Portfolio Website** — a clean, modern, and responsive
 
 ---
 
-## 🧠 What This Is
+## 🧠 About This Project
 
-This repository contains the full source code for my portfolio website — a professional front-end project demonstrating:
+This repository contains the complete source code of my personal portfolio website. It serves as a **digital resume and professional showcase**, designed to present my work, skills, and background in a clear and accessible way.
 
-- Responsive layout optimized for all device sizes
-- Project galleries highlighting notable work
-- Skills section presenting technical abilities
-- A polished and professional UI/UX design
-- Resume integration (PDF + HTML) for quick access :contentReference[oaicite:2]{index=2}
-
-This portfolio serves as a **digital resume** and **showcase of capabilities** for recruiters, collaborators, and potential clients.
+The portfolio is intended for:
+- Recruiters
+- Collaborators
+- Clients
+- Academic and professional references
 
 ---
 
-## 📌 Features
+## ✨ Features
 
-✔ **Responsive Design:** Works beautifully on desktops, tablets, and mobile phones  
-✔ **Project Highlights:** Displays key creative and technical works  
-✔ **Skills Overview:** Highlights technical proficiencies with clarity  
-✔ **Clean UI:** Minimalist, readable, and professional design  
-✔ **Resume Integration:** Includes downloadable resume and browser-viewable resume page :contentReference[oaicite:3]{index=3}
-
----
-
-
-Files like `supabase_setup.sql` are included for reference and future expansion of backend or data storage features. :contentReference[oaicite:4]{index=4}
+✔ Responsive design for all screen sizes  
+✔ Clean and professional UI/UX  
+✔ Project showcase section  
+✔ Skills and technology overview  
+✔ Resume view and download support  
+✔ Lightweight and fast performance  
 
 ---
 
-## 🚀 Purpose
+## 📁 Project Structure
 
-This website exists to:
-
-- Present my **professional identity** online
-- Highlight skills, experience, and completed projects
-- Provide a **live portfolio link** to share with others
-- Act as a central reference in job applications and interviews :contentReference[oaicite:5]{index=5}
 
 ---
 
-## 🧩 Technology Stack
+## 🛠️ Technologies Used
 
-This portfolio is built using:
-
-- **HTML5** – Structure and content  
-- **CSS3** – Design and responsive layout  
-- **JavaScript** – User interactivity  
-- **Supabase (optional)** – Prepared for backend enhancements :contentReference[oaicite:6]{index=6}
-
-*(No frameworks required — everything is written in pure frontend code for maximum portability and simplicity.)*
+- HTML5  
+- CSS3  
+- JavaScript  
+- Responsive Web Design  
+- GitHub Pages (for deployment)
 
 ---
 
-## 🎯 Ideal For
+## 🎯 Purpose
 
-This project is perfect for:
-
-- Software developers building an online identity
-- Students and beginners showcasing skills and progress
-- Anyone wanting a live portfolio hosted via GitHub Pages
-
----
-
-## 📈 Why It Matters
-
-A portfolio website like this:
-
-- Converts your GitHub activity and projects into a **professional narrative**
-- Strengthens first impressions for recruiters and peers
-- Demonstrates your ability to build and publish web projects :contentReference[oaicite:7]{index=7}
+This portfolio website exists to:
+- Establish a strong online professional presence  
+- Showcase projects and technical skills  
+- Act as a central reference during job applications  
+- Demonstrate frontend development capabilities  
 
 ---
 
-## 📬 Connect With Me
+## 📬 Contact Me
 
-Visit my live portfolio to learn more about me and my work:  
-👉 https://mubin25s.github.io/Portfolio/ :contentReference[oaicite:8]{index=8}
+You can connect with me through the following platforms:
 
-I’m always open to collaboration, feedback, and opportunities.
+- **GitHub:** https://github.com/mubin25s  
+- **LinkedIn:** https://www.linkedin.com/in/fathum-mubin-090937280  
+- **X (Twitter):** https://x.com/FathumMubin26  
+- **Facebook:** https://www.facebook.com/share/14RTXWtMn8Y/  
+- **Instagram:** https://www.instagram.com/fathum.mubin.26  
+- **WhatsApp:** +8801302910017  
 
 ---
 
 ## 📜 License
 
-This repository does not include a license. Add one (e.g., MIT) if you want others to freely reuse or build upon your code.
+This project does not currently include a license.  
+A license file (e.g., MIT) can be added if open-source distribution is intended.
 
 ---
 
-✨ *Thank you for checking out my portfolio!*
-
-
-## 💡 What You’ll Find Here
-
+✨ *Thank you for visiting my portfolio. Feedback and collaboration are always welcome.*
