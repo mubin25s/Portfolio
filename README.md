@@ -2,6 +2,10 @@
 
 My personal portfolio website showcasing **projects, skills, and experience**.
 
+## See My Portfolio
+  👉 https://mubin25s.github.io/Portfolio/
+
+
 ## ✨ Features
 - Responsive design
 - Project highlights
