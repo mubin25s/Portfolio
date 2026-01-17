@@ -80,16 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Hide cursor when leaving window
-    document.addEventListener('mouseleave', () => {
-        cursorMain.style.opacity = '0';
-        cursorGlow.style.opacity = '0';
-    });
+    // Cursor visibility logic removed to ensure it stays visible
 
-    document.addEventListener('mouseenter', () => {
-        cursorMain.style.opacity = '1';
-        cursorGlow.style.opacity = '1';
-    });
 
     // Initialize Supabase
     const SUPABASE_URL = 'https://yrqfglueiungguldisym.supabase.co';

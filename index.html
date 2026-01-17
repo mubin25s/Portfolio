@@ -6,7 +6,7 @@
     <title>My Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -259,54 +259,122 @@
         </div>
     </section>
 
-    <section id="interests" class="section alt-bg">
+    <section id="technical-expertise" class="section" style="padding: 50px 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
         <div class="container">
-            <h2 class="section-title">Interests & Skills</h2>
-            <div class="interests-container shadow-border">
-                <ul class="interests-list">
-                    <li>Programming Fundamentals</li>
-                    <li>Problem-Solving</li>
-                    <li>Web Development</li>
-                    <li>Frontend & UI/UX Awareness</li>
-                    <li>Backend & Database Basics</li>
-                    <li>Linux (Ubuntu, Kali, Arch)</li>
-                    <li>Open Source</li>
-                    <li>Project Structuring</li>
-                    <li>Editing & Clarity</li>
-                    <li>Fast Learner, Tech-Curious</li>
-                    <li>Photography</li>
-                </ul>
+            <div class="expertise-grid" style="grid-template-columns: 1fr;">
+                <!-- Group 1: Core Skills & Supporting Skills -->
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Core Skills</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 100%">Problem Solving</li>
+                            <li style="--fill: 100%">Programming Fundamentals</li>
+                            <li style="--fill: 100%">Web Development</li>
+                            <li style="--fill: 100%">Frontend & UI/UX Designer</li>
+                            <li style="--fill: 100%">Backend & Database Basics</li>
+                            <li style="--fill: 100%">Git & Version Control</li>
+                            <li style="--fill: 100%">Project Structuring</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Supporting Skills</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 100%">Linux (Ubuntu, Kali, Arch)</li>
+                            <li style="--fill: 100%">Open Source</li>
+                            <li style="--fill: 100%">Fast Learner, Tech-Curious</li>
+                            <li style="--fill: 100%">Editing & Clarity</li>
+                            <li style="--fill: 100%">Photography</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="languages" class="section">
+    <!-- Group 2: Languages & Frameworks -->
+    <section id="dev-stack" class="section" style="padding: 20px 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
         <div class="container">
-            <h2 class="section-title">Programming Languages</h2>
-            <div class="interests-container shadow-border" style="padding: 1.5rem 2rem; max-width: 800px; margin: 0 auto;">
-                <ul class="interests-list" style="margin-bottom: 1.2rem;">
-                    <li style="--fill: 75%">JavaScript</li>
-                    <li style="--fill: 40%">Python</li>
-                    <li style="--fill: 80%">Java</li>
-                    <li style="--fill: 75%">PHP</li>
-                    <li style="--fill: 100%">MySQL</li>
-                </ul>
-                <ul class="interests-list" style="margin-bottom: 1.2rem;">
-                    <li style="--fill: 100%">C</li>
-                    <li style="--fill: 50%">C++</li>
-                    <li style="--fill: 60%">C#</li>
-                </ul>
-                <ul class="interests-list">
-                    <li style="--fill: 100%">HTML5</li>
-                    <li style="--fill: 100%">CSS3</li>
-                    <li style="--fill: 35%">Dart</li>
-                    <li style="--fill: 70%">Shell</li>
-                </ul>
+            <div class="expertise-grid" style="grid-template-columns: 1fr;">
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Programming Languages</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0.8rem; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 75%">JavaScript</li>
+                            <li style="--fill: 40%">Python</li>
+                            <li style="--fill: 80%">Java</li>
+                            <li style="--fill: 75%">PHP</li>
+                            <li style="--fill: 100%">C</li>
+                            <li style="--fill: 50%">C++</li>
+                        </ul>
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 60%">C#</li>
+                            <li style="--fill: 100%">HTML5</li>
+                            <li style="--fill: 100%">CSS3</li>
+                            <li style="--fill: 35%">Dart</li>
+                            <li style="--fill: 70%">Shell</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Frameworks</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 65%">React</li>
+                            <li style="--fill: 70%">Laravel</li>
+                            <li style="--fill: 60%">Node.js</li>
+                            <li style="--fill: 65%">Express</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="contact" class="section">
+    <!-- Group 3: Databases & Tools -->
+    <section id="data-tools" class="section" style="padding: 20px 0 50px 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+        <div class="container">
+            <div class="expertise-grid" style="grid-template-columns: 1fr;">
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Databases</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 100%">MySQL</li>
+                            <li style="--fill: 95%">MariaDB</li>
+                            <li style="--fill: 100%">SQLite</li>
+                            <li style="--fill: 100%">Supabase</li>
+                            <li style="--fill: 70%">MongoDB</li>
+                            <li style="--fill: 80%">Firebase</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expertise-item">
+                    <h2 class="expertise-title">Tools</h2>
+                    <div class="interests-container shadow-border" style="padding: 1.5rem; height: 100%;">
+                        <ul class="interests-list" style="margin-bottom: 0; gap: 0.8rem; justify-content: center;">
+                            <li style="--fill: 100%">VS Code</li>
+                            <li style="--fill: 100%">Git</li>
+                            <li style="--fill: 100%">GitHub</li>
+                            <li style="--fill: 100%">Netlify</li>
+                            <li style="--fill: 100%">Vercel</li>
+                            <li style="--fill: 100%">Codeblocks</li>
+                            <li style="--fill: 100%">Cloudflare</li>
+                            <li style="--fill: 100%">Firebase</li>
+                            <li style="--fill: 100%">Microsoft 365</li>
+                            <li style="--fill: 100%">Adobe</li>
+                            <li style="--fill: 100%">Canva</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 4rem 0 6rem 0;">
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
             <p class="section-subtitle">Have a project in mind? Let's talk.</p>
@@ -332,7 +400,7 @@
         </div>
     </section>
 
-    <section id="reviews" class="section alt-bg">
+    <section id="reviews" class="section alt-bg" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 4rem 0 6rem 0;">
         <div class="container">
             <h2 class="section-title">Leave a Review</h2>
             <p class="section-subtitle">Your feedback matters! Rate your experience.</p>
@@ -348,7 +416,6 @@
                         <input type="email" id="rating-email" name="email" required placeholder="your@email.com">
                     </div>
                 </div>
-
                 <div class="form-group rating-group">
                     <label>Rate Your Experience</label>
                     <div class="star-rating" id="star-rating">
@@ -360,7 +427,6 @@
                     </div>
                     <input type="hidden" id="rating" name="rating" value="0">
                 </div>
-
                 <div class="form-group">
                     <label for="review">Review (Optional)</label>
                     <textarea id="review" name="review" rows="2" placeholder="Share your thoughts about my work..."></textarea>
