@@ -480,7 +480,7 @@ h1, h2, h3 { color: var(--text-primary); font-weight: 800; letter-spacing: -0.02
 }
 
 .expertise-grid {
-    display: grid; grid-template-columns: 1fr; gap: 2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;
     width: 100%; max-width: 1200px; margin: 0 auto;
 }
 .expertise-item { display: flex; flex-direction: column; }
