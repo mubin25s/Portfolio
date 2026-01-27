@@ -124,14 +124,14 @@ section { scroll-snap-align: start; }
     z-index: 3000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.05);
-    backdrop-filter: saturate(180%);
-    -webkit-backdrop-filter: saturate(180%);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
 }
 .modal-content {
     position: absolute;
-    background: rgba(15, 15, 20, 0.6);
-    backdrop-filter: none;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(10px);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     padding: 1.5rem;
