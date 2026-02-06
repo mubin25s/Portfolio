@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #DC143C; /* Crimson */
-  --color-secondary: #800020; /* Burgundy */
-  --color-accent: #FF0000; /* Bright Red */
-  --color-dark: #030303;
+  --color-primary: #80011f; /* Deep Burgundy */
+  --color-secondary: #5c0016; /* Darker Burgundy for gradients */
+  --color-accent: #80011f;
+  --color-dark: #161616;
   
   --animate-glow: glow 2s ease-in-out infinite alternate;
 
   @keyframes glow {
-    0% { box-shadow: 0 0 5px #DC143C, 0 0 10px #DC143C; }
-    100% { box-shadow: 0 0 20px #DC143C, 0 0 40px #DC143C; }
+    0% { box-shadow: 0 0 5px #80011f, 0 0 10px #80011f; }
+    100% { box-shadow: 0 0 20px #80011f, 0 0 40px #80011f; }
   }
 
   --animate-shimmer: shimmer 5s linear infinite;
@@ -18,6 +18,11 @@
   @keyframes shimmer {
     from { background-position: 0% center; }
     to { background-position: 200% center; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(-20px) translateX(10px); }
   }
 }
 
@@ -32,8 +37,8 @@ html {
 }
 
 body {
-  @apply bg-[#030303] text-slate-200 font-sans overflow-x-hidden;
-  background: radial-gradient(circle at 50% 50%, #111 0%, #030303 100%);
+  @apply bg-[#161616] text-slate-200 font-sans overflow-x-hidden;
+  background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #161616 100%);
   scroll-snap-type: y mandatory;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,13 +65,13 @@ body {
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#DC143C] to-[#800020];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#80011f] to-[#5c0016];
     will-change: filter;
   }
 
   .btn-primary {
-    @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#DC143C] to-[#800020] text-white font-semibold 
-           transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-red-900/20;
+    @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#80011f] to-[#5c0016] text-white font-semibold 
+           transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-[#80011f]/20;
     will-change: transform;
     transform: translateZ(0);
   }
@@ -79,7 +84,7 @@ body {
   }
 
   .name-accent {
-    background: linear-gradient(to right, #DC143C 20%, #fff 40%, #fff 60%, #DC143C 80%);
+    background: linear-gradient(to right, #80011f 20%, #fff 40%, #fff 60%, #80011f 80%);
     background-size: 200% auto;
     @apply bg-clip-text text-transparent animate-shimmer;
     will-change: background-position;

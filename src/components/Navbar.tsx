@@ -5,7 +5,7 @@ import { Menu, X, FileText } from 'lucide-react';
 export const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState('#');
+    const [activeSection, setActiveSection] = useState('#home');
 
     useEffect(() => {
         const handleScroll = () => {
@@ -14,7 +14,7 @@ export const Navbar = () => {
         window.addEventListener('scroll', handleScroll);
 
         // Intersection Observer for active section tracking
-        const sections = ['projects', 'skills', 'contact'];
+        const sections = ['home', 'projects', 'skills', 'contact'];
         const observerOptions = {
             root: null,
             rootMargin: '-20% 0px -70% 0px', // Trigger when section is in the top portion
@@ -26,7 +26,7 @@ export const Navbar = () => {
                 if (entry.isIntersecting) {
                     setActiveSection(`#${entry.target.id}`);
                 } else if (window.scrollY < 100) {
-                    setActiveSection('#');
+                    setActiveSection('#home');
                 }
             });
         };
@@ -45,7 +45,7 @@ export const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { name: 'About', href: '#' },
+        { name: 'About', href: '#home' },
         { name: 'Projects', href: '#projects' },
         { name: 'Skills & Stack', href: '#skills' },
         { name: 'Contact', href: '#contact' },
@@ -59,7 +59,7 @@ export const Navbar = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-2xl font-black tracking-tighter"
-                    onClick={() => setActiveSection('#')}
+                    onClick={() => setActiveSection('#home')}
                 >
                     MUBIN<span className="text-primary">.</span>
                 </motion.a>

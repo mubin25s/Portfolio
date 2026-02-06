@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
@@ -41,7 +42,7 @@ export const Hero = () => {
     }, [currentText, isDeleting, roleIndex, speed, roles]);
 
     return (
-        <section className="snap-section overflow-hidden px-6 pt-16">
+        <section id="home" className="snap-section overflow-hidden px-6 pt-16">
             <div className="container max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
                 <motion.div
                     initial={{ opacity: 0, x: -50 }}
@@ -90,6 +91,7 @@ export const Hero = () => {
                     >
                         <a href="#contact" className="btn-primary py-2 px-6 text-sm">Get In Touch</a>
                         <a href="#projects" className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 backdrop-blur-sm font-semibold text-sm">View Projects</a>
+                        <Link to="/about" className="px-6 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 font-semibold text-sm">More About Me</Link>
                     </motion.div>
 
                     <motion.div
@@ -101,7 +103,7 @@ export const Hero = () => {
                         {[
                             { icon: "fa-brands fa-github", href: "https://github.com/mubin25s", color: "#fff" },
                             { icon: "fa-brands fa-linkedin-in", href: "https://linkedin.com/in/fathum-mubin-090937280", color: "#0077b5" },
-                            { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#DC143C" },
+                            { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#80011f" },
                             { icon: "fa-brands fa-reddit-alien", href: "https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV", color: "#ff4500" },
                             { icon: "fa-brands fa-x-twitter", href: "https://x.com/FathumMubin26", color: "#fff" },
                             { icon: "fa-brands fa-discord", href: "https://discord.com/users/mubin.26", color: "#5865f2" },
