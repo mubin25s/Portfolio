@@ -14,12 +14,6 @@ function App() {
       <Projects />
       <Skills />
       <Contact />
-
-      <footer className="py-12 border-t border-white/5 text-center text-slate-500 text-sm">
-        <div className="container px-6">
-          <p>&copy; {new Date().getFullYear()} K. M. Fathum Mubin Sachcha. All rights reserved.</p>
-        </div>
-      </footer>
     </main>
   );
 }
