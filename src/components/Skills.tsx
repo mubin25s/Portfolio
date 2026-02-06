@@ -199,7 +199,7 @@ export const Skills = () => {
                 >
                     {/* 1. Programming Languages */}
                     <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-3">
-                        <SectionFlipCard title="Languages" color="#00f2fe" frontIcon="fa-solid fa-code">
+                        <SectionFlipCard title="Languages" color="#DC143C" frontIcon="fa-solid fa-code">
                             <div className="grid grid-cols-2 gap-y-4 gap-x-4">
                                 {technicalStack[0].skills.map((skill, i) => (
                                     <SkillItem key={i} {...skill} />
@@ -210,7 +210,7 @@ export const Skills = () => {
 
                     {/* 2. Core Competencies */}
                     <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-1">
-                        <SectionFlipCard title="Systems" color="#00f2fe" frontIcon="fa-solid fa-brain">
+                        <SectionFlipCard title="Systems" color="#DC143C" frontIcon="fa-solid fa-brain">
                             <div className="flex flex-wrap gap-2">
                                 {coreSkills.map((skill, i) => (
                                     <span key={i} className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/5 text-[10px] font-black uppercase text-slate-400 hover:text-white hover:border-primary/40 transition-all tracking-widest cursor-default">
@@ -223,7 +223,7 @@ export const Skills = () => {
 
                     {/* 3. Aptitudes */}
                     <motion.div variants={itemVariants} className="md:col-span-1 md:row-span-1">
-                        <SectionFlipCard title="Soft Skills" color="#4facfe" frontIcon="fa-solid fa-bolt">
+                        <SectionFlipCard title="Soft Skills" color="#800020" frontIcon="fa-solid fa-bolt">
                             <div className="flex flex-col gap-3 text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">
                                 {supportingSkills.map((s, i) => (
                                     <span key={i} className="hover:text-white transition-colors cursor-default flex items-center gap-2">
@@ -237,7 +237,7 @@ export const Skills = () => {
 
                     {/* 4. Engines */}
                     <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-1">
-                        <SectionFlipCard title="Frameworks" color="#4facfe" frontIcon="fa-solid fa-layer-group">
+                        <SectionFlipCard title="Frameworks" color="#800020" frontIcon="fa-solid fa-layer-group">
                             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                 {technicalStack[1].skills.map((skill, i) => (
                                     <SkillItem key={i} {...skill} />
@@ -270,7 +270,7 @@ export const Skills = () => {
 
                     {/* 7. Data Labs */}
                     <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-1">
-                        <SectionFlipCard title="Persistence" color="#ff007a" frontIcon="fa-solid fa-database">
+                        <SectionFlipCard title="Persistence" color="#FF0000" frontIcon="fa-solid fa-database">
                             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                 {technicalStack[3].skills.map((skill, i) => (
                                     <SkillItem key={i} {...skill} />

@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #00f2fe;
-  --color-secondary: #4facfe;
-  --color-accent: #ff007a;
+  --color-primary: #DC143C; /* Crimson */
+  --color-secondary: #800020; /* Burgundy */
+  --color-accent: #FF0000; /* Bright Red */
   --color-dark: #030303;
   
   --animate-glow: glow 2s ease-in-out infinite alternate;
 
   @keyframes glow {
-    0% { box-shadow: 0 0 5px #00f2fe, 0 0 10px #00f2fe; }
-    100% { box-shadow: 0 0 20px #00f2fe, 0 0 40px #00f2fe; }
+    0% { box-shadow: 0 0 5px #DC143C, 0 0 10px #DC143C; }
+    100% { box-shadow: 0 0 20px #DC143C, 0 0 40px #DC143C; }
   }
 
   --animate-shimmer: shimmer 5s linear infinite;
@@ -60,13 +60,13 @@ body {
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] to-[#4facfe];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#DC143C] to-[#800020];
     will-change: filter;
   }
 
   .btn-primary {
-    @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-black font-semibold 
-           transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20;
+    @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#DC143C] to-[#800020] text-white font-semibold 
+           transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-red-900/20;
     will-change: transform;
     transform: translateZ(0);
   }
@@ -79,7 +79,7 @@ body {
   }
 
   .name-accent {
-    background: linear-gradient(to right, #00f2fe 20%, #fff 40%, #fff 60%, #00f2fe 80%);
+    background: linear-gradient(to right, #DC143C 20%, #fff 40%, #fff 60%, #DC143C 80%);
     background-size: 200% auto;
     @apply bg-clip-text text-transparent animate-shimmer;
     will-change: background-position;
