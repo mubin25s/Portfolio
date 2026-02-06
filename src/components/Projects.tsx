@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
 import { Github } from 'lucide-react';
 
 const projects = [
@@ -46,10 +47,47 @@ const projects = [
     }
 ];
 
-// Combine projects for infinite loop
-const tripleProjects = [...projects, ...projects, ...projects];
+// Duplicate projects to ensure smooth looping
+const displayProjects = [...projects, ...projects, ...projects];
 
 export const Projects = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [baseX, setBaseX] = useState(0);
+    const x = useMotionValue(0);
+
+    // Auto-scroll speed
+    const speed = -0.5; // Negative for leftward movement
+
+    useAnimationFrame((t, delta) => {
+        if (!isDragging) {
+            // Update x based on time delta for consistent speed across refresh rates
+            const moveBy = speed * (delta / 16);
+            const newX = x.get() + moveBy;
+
+            // Wrap logic: when we move past 1/3 of the container, jump back
+            // This works because displayProjects is 3x the original list
+            if (containerRef.current) {
+                const totalWidth = containerRef.current.scrollWidth;
+                const setWidth = totalWidth / 3;
+
+                if (newX <= -setWidth) {
+                    x.set(newX + setWidth);
+                } else if (newX > 0) {
+                    x.set(newX - setWidth);
+                } else {
+                    x.set(newX);
+                }
+            }
+        }
+    });
+
+    const handleDragStart = () => setIsDragging(true);
+    const handleDragEnd = () => {
+        setIsDragging(false);
+        // After drag, ensure x is still wrapped correctly next frame
+    };
+
     return (
         <section id="projects" className="snap-section py-8 overflow-hidden flex flex-col justify-center">
             <div className="container mx-auto mb-8 px-6">
@@ -60,31 +98,37 @@ export const Projects = () => {
                 </div>
             </div>
 
-            <div className="relative flex overflow-hidden">
+            <div className="relative flex overflow-hidden cursor-grab active:cursor-grabbing">
                 <motion.div
-                    className="flex gap-4 md:gap-6 py-4"
-                    animate={{
-                        x: [0, "-33.333%"]
-                    }}
-                    transition={{
-                        x: {
-                            repeat: Infinity,
-                            repeatType: "loop",
-                            duration: 35, // Relaxed duration for smoother animation
-                            ease: "linear",
-                        },
-                    }}
-                    style={{
-                        width: "fit-content",
-                        willChange: "transform" // Critical for performance
+                    ref={containerRef}
+                    className="flex gap-4 md:gap-6 py-4 select-none"
+                    style={{ x }}
+                    drag="x"
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    dragElastic={0.05}
+                    dragMomentum={true}
+                    onUpdate={(latest) => {
+                        // Keep x within bounds during drag
+                        if (isDragging && containerRef.current) {
+                            const totalWidth = containerRef.current.scrollWidth;
+                            const setWidth = totalWidth / 3;
+                            const currentX = latest.x as number;
+
+                            if (currentX <= -setWidth) {
+                                x.set(currentX + setWidth);
+                            } else if (currentX > 0) {
+                                x.set(currentX - setWidth);
+                            }
+                        }
                     }}
                 >
-                    {tripleProjects.map((project, index) => (
+                    {displayProjects.map((project, index) => (
                         <div
                             key={index}
-                            className="relative w-[210px] md:w-[280px] lg:w-[320px] flex-shrink-0 group/card"
+                            className="relative w-[210px] md:w-[280px] lg:w-[320px] flex-shrink-0 group/card pointer-events-none"
                         >
-                            <div className="glass-card aspect-[11/16] rounded-xl overflow-hidden border border-white/5 transition-all duration-300 relative bg-white/[0.03]">
+                            <div className="glass-card aspect-[11/16] rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 relative bg-white/[0.03]">
                                 <img
                                     src={project.image}
                                     alt={project.title}
@@ -103,11 +147,19 @@ export const Projects = () => {
                                         {project.description}
                                     </p>
 
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <a href={project.link} target="_blank" className="flex-1 py-1.5 md:py-2 bg-primary text-black text-center rounded font-bold text-[9px] md:text-xs hover:bg-white transition-colors">
+                                    <div className="flex items-center gap-2 mt-2 pointer-events-auto">
+                                        <a
+                                            href={project.link}
+                                            target="_blank"
+                                            className="flex-1 py-1.5 md:py-2 bg-primary text-black text-center rounded-xl font-bold text-[9px] md:text-xs hover:bg-white transition-colors"
+                                        >
                                             VIEW PROJECT
                                         </a>
-                                        <a href={project.github} target="_blank" className="w-8 h-8 md:w-10 md:h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center rounded border border-white/10 hover:bg-white/20 transition-all">
+                                        <a
+                                            href={project.github}
+                                            target="_blank"
+                                            className="w-8 h-8 md:w-10 md:h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center rounded-xl border border-white/10 hover:bg-white/20 transition-all"
+                                        >
                                             <Github size={16} />
                                         </a>
                                     </div>
@@ -119,7 +171,7 @@ export const Projects = () => {
             </div>
 
             <div className="mt-12 text-center">
-                <p className="text-slate-600 text-[10px] tracking-[0.5em] uppercase animate-pulse">Infinity Series • Portfolio v2.0</p>
+                <p className="text-slate-600 text-[10px] tracking-[0.5em] uppercase animate-pulse">Infinity Series • Swipe to Explore</p>
             </div>
         </section>
     );
