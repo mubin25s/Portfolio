@@ -170,7 +170,7 @@ const itemVariants = {
     visible: { opacity: 1, y: 0, scale: 1 }
 };
 
-const swipeTransition = { duration: 0.6, ease: "easeOut" };
+
 
 export const Skills = () => {
     return (
