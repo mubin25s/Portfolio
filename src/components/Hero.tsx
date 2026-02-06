@@ -115,17 +115,19 @@ export const Hero = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 whileHover={{
-                                    y: -4,
-                                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                    color: social.color,
-                                    borderColor: social.color
+                                    y: -6,
+                                    scale: 1.3,
+                                    color: social.color
                                 }}
                                 whileTap={{ scale: 0.9 }}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05] border border-white/10 backdrop-blur-md transition-all duration-300 group relative"
-                                style={{ boxShadow: `0 0 0 rgba(0, 0, 0, 0)` }}
+                                className="w-10 h-10 flex items-center justify-center text-slate-400 transition-all duration-300 group"
                             >
-                                <i className={`${social.icon} text-lg transition-transform duration-300 group-hover:scale-110 relative z-10`}></i>
-                                <div className="absolute inset-0 rounded-xl bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0" style={{ backgroundColor: `${social.color}30` }}></div>
+                                <i
+                                    className={`${social.icon} text-2xl transition-all duration-300 group-hover:brightness-150`}
+                                    style={{ filter: `drop-shadow(0 0 2px rgba(255,255,255,0.1))` }}
+                                    onMouseEnter={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 10px ${social.color}) brightness(1.4)`}
+                                    onMouseLeave={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 2px rgba(255,255,255,0.1))`}
+                                ></i>
                             </motion.a>
                         ))}
                     </motion.div>
