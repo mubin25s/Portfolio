@@ -116,7 +116,7 @@ const SectionFlipCard = ({
 
                 {/* Back Side: The Details (Skills Grid) */}
                 <div
-                    className="absolute inset-0 backface-hidden glass-card flex flex-col p-4 md:p-6 rounded-2xl bg-[#0a0a0b] overflow-hidden shadow-2xl"
+                    className="absolute inset-0 backface-hidden glass-card border-0 flex flex-col p-4 md:p-6 rounded-2xl bg-[#0a0a0b] overflow-hidden shadow-2xl"
                     style={{
                         backfaceVisibility: 'hidden',
                         transform: 'rotateY(180deg)'
