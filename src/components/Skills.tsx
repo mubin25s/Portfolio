@@ -4,59 +4,59 @@ const technicalStack = [
     {
         title: "Programming Languages",
         skills: [
-            { name: "JS", icon: "devicon-javascript-plain" },
-            { name: "Java", icon: "devicon-java-plain" },
-            { name: "C++", icon: "devicon-cplusplus-plain" },
-            { name: "C#", icon: "devicon-csharp-plain" },
-            { name: "Dart", icon: "devicon-dart-plain" },
-            { name: "PHP", icon: "devicon-php-plain" },
-            { name: "C", icon: "devicon-c-plain" },
-            { name: "Shell", icon: "devicon-bash-plain" },
-            { name: "TS", icon: "devicon-typescript-plain" },
-            { name: "Python", icon: "devicon-python-plain" },
-            { name: "HTML5", icon: "devicon-html5-plain" },
-            { name: "CSS3", icon: "devicon-css3-plain" }
+            { name: "JS", icon: "devicon-javascript-plain", color: "#F7DF1E" },
+            { name: "Java", icon: "devicon-java-plain", color: "#007396" },
+            { name: "C++", icon: "devicon-cplusplus-plain", color: "#00599C" },
+            { name: "C#", icon: "devicon-csharp-plain", color: "#239120" },
+            { name: "Dart", icon: "devicon-dart-plain", color: "#0175C2" },
+            { name: "PHP", icon: "devicon-php-plain", color: "#777BB4" },
+            { name: "C", icon: "devicon-c-plain", color: "#A8B9CC" },
+            { name: "Shell", icon: "devicon-bash-plain", color: "#4EAA25" },
+            { name: "TS", icon: "devicon-typescript-plain", color: "#3178C6" },
+            { name: "Python", icon: "devicon-python-plain", color: "#3776AB" },
+            { name: "HTML5", icon: "devicon-html5-plain", color: "#E34F26" },
+            { name: "CSS3", icon: "devicon-css3-plain", color: "#1572B6" }
         ]
     },
     {
         title: "Frameworks",
         skills: [
-            { name: "React", icon: "devicon-react-original" },
-            { name: "Node.js", icon: "devicon-nodejs-plain" },
-            { name: "Express.js", icon: "devicon-express-original" },
-            { name: "Laravel", icon: "devicon-laravel-original" },
-            { name: "Tailwind", icon: "devicon-tailwindcss-original" },
-            { name: "Bootstrap", icon: "devicon-bootstrap-plain" },
-            { name: "Socket.io", icon: "devicon-socketio-original" }
+            { name: "React", icon: "devicon-react-original", color: "#61DAFB" },
+            { name: "Node.js", icon: "devicon-nodejs-plain", color: "#339933" },
+            { name: "Express.js", icon: "devicon-express-original", color: "#000000" },
+            { name: "Laravel", icon: "devicon-laravel-original", color: "#FF2D20" },
+            { name: "Tailwind", icon: "devicon-tailwindcss-original", color: "#06B6D4" },
+            { name: "Bootstrap", icon: "devicon-bootstrap-plain", color: "#7952B3" },
+            { name: "Socket.io", icon: "devicon-socketio-original", color: "#010101" }
         ]
     },
     {
         title: "Tools",
         skills: [
-            { name: "Git", icon: "devicon-git-plain" },
-            { name: "GitHub", icon: "devicon-github-original" },
-            { name: "VS Code", icon: "devicon-vscode-plain" },
-            { name: "NPM", icon: "devicon-npm-original-wordmark" },
-            { name: "Vite", icon: "devicon-vite-original" },
-            { name: "XAMPP", icon: "devicon-apache-plain" },
-            { name: "CodeBlocks", icon: "fa-solid fa-cube" },
-            { name: "Cloudflare", icon: "devicon-cloudflare-plain" },
-            { name: "Postman", icon: "devicon-postman-plain" },
-            { name: "Figma", icon: "devicon-figma-plain" },
-            { name: "Vercel", icon: "devicon-vercel-original" },
-            { name: "Netlify", icon: "devicon-netlify-plain" },
-            { name: "Docker", icon: "devicon-docker-plain" }
+            { name: "Git", icon: "devicon-git-plain", color: "#F05032" },
+            { name: "GitHub", icon: "devicon-github-original", color: "#FFFFFF" },
+            { name: "VS Code", icon: "devicon-vscode-plain", color: "#007ACC" },
+            { name: "NPM", icon: "devicon-npm-original-wordmark", color: "#CB3837" },
+            { name: "Vite", icon: "devicon-vite-original", color: "#646CFF" },
+            { name: "XAMPP", icon: "devicon-apache-plain", color: "#FB503B" },
+            { name: "CodeBlocks", icon: "fa-solid fa-cube", color: "#2E5D87" },
+            { name: "Cloudflare", icon: "devicon-cloudflare-plain", color: "#F38020" },
+            { name: "Postman", icon: "devicon-postman-plain", color: "#FF6C37" },
+            { name: "Figma", icon: "devicon-figma-plain", color: "#F24E1E" },
+            { name: "Vercel", icon: "devicon-vercel-original", color: "#FFFFFF" },
+            { name: "Netlify", icon: "devicon-netlify-plain", color: "#00C7B7" },
+            { name: "Docker", icon: "devicon-docker-plain", color: "#2496ED" }
         ]
     },
     {
         title: "Databases",
         skills: [
-            { name: "MySQL", icon: "devicon-mysql-plain" },
-            { name: "Postgres", icon: "devicon-postgresql-plain" },
-            { name: "MongoDB", icon: "devicon-mongodb-plain" },
-            { name: "Supabase", icon: "devicon-supabase-plain" },
-            { name: "Firebase", icon: "devicon-firebase-plain" },
-            { name: "MariaDB", icon: "devicon-mariadb-plain" }
+            { name: "MySQL", icon: "devicon-mysql-plain", color: "#4479A1" },
+            { name: "Postgres", icon: "devicon-postgresql-plain", color: "#4169E1" },
+            { name: "MongoDB", icon: "devicon-mongodb-plain", color: "#47A248" },
+            { name: "Supabase", icon: "devicon-supabase-plain", color: "#3ECF8E" },
+            { name: "Firebase", icon: "devicon-firebase-plain", color: "#FFCA28" },
+            { name: "MariaDB", icon: "devicon-mariadb-plain", color: "#003545" }
         ]
     }
 ];
@@ -109,16 +109,13 @@ export const Skills = () => {
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="flex items-end justify-between mb-3 border-b border-white/5 pb-2"
+                    className="flex items-end justify-between mb-3"
                 >
                     <div>
                         <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase leading-none">
                             EXPERTISE <span className="text-gradient">& STACK</span>
                         </h2>
                         <p className="text-slate-500 text-[9px] md:text-[10px] font-bold tracking-[0.2em] mt-1 uppercase">Core Competencies & Digital Toolset</p>
-                    </div>
-                    <div className="hidden md:block text-right">
-                        <span className="text-[10px] text-white/20 font-mono">SYS_VERSION_4.0.2</span>
                     </div>
                 </motion.div>
 
@@ -129,26 +126,51 @@ export const Skills = () => {
                     viewport={{ once: true }}
                     className="grid grid-cols-1 md:grid-cols-6 md:grid-rows-[auto_1fr_1fr] gap-2 lg:gap-3 flex-1 min-h-0"
                 >
-                    {/* 1. Programming Languages - Tall Block (Span all rows) */}
+                    {/* 1. Programming Languages - Tall Block */}
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-2 md:row-span-3 p-3 md:p-5 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl relative group overflow-hidden flex flex-col min-h-0"
+                        className="md:col-span-2 md:row-span-3 p-3 md:p-5 glass-card relative group overflow-hidden flex flex-col min-h-0"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#00f2fe]"></div>
-                            {technicalStack[0].title}
-                        </h3>
-                        <div className="grid grid-cols-2 gap-y-3 gap-x-3 flex-1 items-start min-h-0 overflow-hidden">
-                            {technicalStack[0].skills.map((skill, i) => (
-                                <div key={i} className="flex items-center gap-3 text-slate-400 group/skill">
-                                    <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 transition-all duration-300 group-hover/skill:bg-primary/10 group-hover/skill:border-primary/20 shrink-0">
-                                        <i className={`${skill.icon} text-lg md:text-xl transition-all duration-300 group-hover/skill:scale-110 group-hover/skill:text-primary group-hover/skill:drop-shadow-[0_0_8px_rgba(0,242,254,0.4)]`}></i>
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <h3 className="text-[12px] font-black text-white/50 group-hover:text-white uppercase tracking-widest mb-4 flex items-center transition-colors underline decoration-primary/30 underline-offset-4">
+                                {technicalStack[0].title}
+                            </h3>
+                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 flex-1 items-start min-h-0 overflow-hidden">
+                                {technicalStack[0].skills.map((skill, i) => (
+                                    <div key={i} className="flex items-center gap-3 group/skill cursor-default">
+                                        <div
+                                            className="w-1.5 h-1.5 bg-white/10 group-hover/skill:scale-125 transition-all rounded-full"
+                                            style={{
+                                                '--hover-bg': skill.color,
+                                                '--hover-shadow': `0 0 12px ${skill.color}`
+                                            } as React.CSSProperties}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = skill.color;
+                                                e.currentTarget.style.boxShadow = `0 0 12px ${skill.color}`;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = '';
+                                                e.currentTarget.style.boxShadow = '';
+                                            }}
+                                        ></div>
+                                        <i
+                                            className={`${skill.icon} text-base md:text-xl text-slate-500 transition-all`}
+                                            style={{ transition: 'all 0.3s' }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.color = skill.color;
+                                                e.currentTarget.style.filter = `drop-shadow(0 0 10px ${skill.color}) brightness(1.5)`;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.color = '';
+                                                e.currentTarget.style.filter = '';
+                                            }}
+                                        ></i>
+                                        <span className="text-[10px] md:text-[11px] font-black text-slate-400 group-hover/skill:text-white uppercase transition-colors tracking-tighter truncate">{skill.name}</span>
                                     </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider group-hover/skill:text-white transition-colors truncate">{skill.name}</span>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </motion.div>
 
@@ -156,7 +178,7 @@ export const Skills = () => {
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-3 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl group flex flex-col"
+                        className="md:col-span-3 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col"
                     >
                         <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-3">Core Competencies</h3>
                         <div className="flex flex-wrap gap-2 mt-auto">
@@ -172,7 +194,7 @@ export const Skills = () => {
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-1 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl group flex flex-col"
+                        className="md:col-span-1 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col"
                     >
                         <h3 className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-3">Aptitudes</h3>
                         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[9px] text-slate-500 font-bold uppercase mt-auto">
@@ -184,70 +206,130 @@ export const Skills = () => {
                         </div>
                     </motion.div>
 
-                    {/* 4. Engines (Top Left Square) */}
+                    {/* 4. Engines */}
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 group flex flex-col min-h-0"
+                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col min-h-0"
                     >
-                        <h3 className="text-[12px] font-black text-white/50 uppercase mb-3 tracking-widest underline decoration-secondary/30 underline-offset-4">Engines</h3>
+                        <h3 className="text-[12px] font-black text-white/50 group-hover:text-white uppercase mb-3 tracking-widest transition-colors underline decoration-secondary/30 underline-offset-4">Engines</h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 flex-1 items-center min-h-0 overflow-hidden">
                             {technicalStack[1].skills.map((skill, i) => (
                                 <div key={i} className="flex items-center gap-3 group/skill cursor-default">
-                                    <div className="w-1.5 h-1.5 bg-white/10 group-hover/skill:bg-secondary transition-colors rounded-full"></div>
-                                    <i className={`${skill.icon} text-base md:text-xl text-slate-500 group-hover/skill:text-secondary transition-all`}></i>
+                                    <div
+                                        className="w-1.5 h-1.5 bg-white/10 group-hover/skill:scale-125 transition-all rounded-full"
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = skill.color;
+                                            e.currentTarget.style.boxShadow = `0 0 12px ${skill.color}`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '';
+                                            e.currentTarget.style.boxShadow = '';
+                                        }}
+                                    ></div>
+                                    <i
+                                        className={`${skill.icon} text-base md:text-xl text-slate-500 transition-all`}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = skill.color;
+                                            e.currentTarget.style.filter = `drop-shadow(0 0 10px ${skill.color}) brightness(1.5)`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = '';
+                                            e.currentTarget.style.filter = '';
+                                        }}
+                                    ></i>
                                     <span className="text-[10px] md:text-[11px] font-black text-slate-400 group-hover/skill:text-white uppercase transition-colors tracking-tighter truncate">{skill.name}</span>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
 
-                    {/* 5. Core Tools (Top Right Square) */}
+                    {/* 5. Core Tools */}
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl group flex flex-col min-h-0"
+                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col min-h-0"
                     >
                         <h3 className="text-[11px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Tools</h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 flex-1 items-center min-h-0 overflow-hidden">
                             {technicalStack[2].skills.slice(0, 8).map((skill, i) => (
                                 <div key={i} className="flex items-center gap-3 group/skill cursor-default">
-                                    <i className={`${skill.icon} text-base md:text-xl transition-all group-hover/skill:scale-110 group-hover/skill:text-white text-slate-500`}></i>
+                                    <i
+                                        className={`${skill.icon} text-base md:text-xl text-slate-500 transition-all group-hover/skill:scale-110`}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = skill.color;
+                                            e.currentTarget.style.filter = `drop-shadow(0 0 12px ${skill.color}) brightness(1.5)`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = '';
+                                            e.currentTarget.style.filter = '';
+                                        }}
+                                    ></i>
                                     <span className="text-[10px] md:text-[11px] font-black group-hover/skill:text-white uppercase transition-colors tracking-widest truncate text-slate-400">{skill.name}</span>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
 
-                    {/* 6. Utility (Bottom Left Square) */}
+                    {/* 6. Utility */}
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl group flex flex-col min-h-0"
+                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col min-h-0"
                     >
                         <h3 className="text-[11px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest mb-3">Utility</h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 flex-1 items-center min-h-0 overflow-hidden">
                             {technicalStack[2].skills.slice(8).map((skill, i) => (
                                 <div key={i} className="flex items-center gap-3 group/skill cursor-default">
-                                    <i className={`${skill.icon} text-base md:text-xl transition-all group-hover/skill:scale-110 group-hover/skill:text-white text-slate-500`}></i>
+                                    <i
+                                        className={`${skill.icon} text-base md:text-xl text-slate-500 transition-all group-hover/skill:scale-110`}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = skill.color;
+                                            e.currentTarget.style.filter = `drop-shadow(0 0 12px ${skill.color}) brightness(1.5)`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = '';
+                                            e.currentTarget.style.filter = '';
+                                        }}
+                                    ></i>
                                     <span className="text-[10px] md:text-[11px] font-black group-hover/skill:text-white uppercase transition-colors tracking-widest truncate text-slate-400">{skill.name}</span>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
 
-                    {/* 7. Data Labs (Bottom Right Square) */}
+                    {/* 7. Data Labs */}
                     <motion.div
                         variants={itemVariants}
                         transition={swipeTransition}
-                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 rounded-2xl bg-black/40 border border-white/5 group flex flex-col min-h-0"
+                        className="md:col-span-2 md:row-span-1 p-3 md:p-4 glass-card group flex flex-col min-h-0"
                     >
-                        <h3 className="text-[12px] font-black text-[#ff007a]/60 uppercase mb-3 tracking-widest">Data Labs</h3>
+                        <h3 className="text-[12px] font-black text-[#ff007a]/60 group-hover:text-[#ff007a] uppercase mb-3 tracking-widest transition-colors">Data Labs</h3>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 flex-1 items-center min-h-0 overflow-hidden">
                             {technicalStack[3].skills.map((skill, i) => (
                                 <div key={i} className="flex items-center gap-3 group/skill cursor-default">
-                                    <div className="w-1.5 h-1.5 bg-white/10 group-hover/skill:bg-[#ff007a] transition-colors rounded-full"></div>
-                                    <i className={`${skill.icon} text-sm md:text-base text-slate-500 group-hover/skill:text-white transition-colors`}></i>
+                                    <div
+                                        className="w-1.5 h-1.5 bg-white/10 group-hover/skill:scale-125 transition-all rounded-full"
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = skill.color;
+                                            e.currentTarget.style.boxShadow = `0 0 12px ${skill.color}`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '';
+                                            e.currentTarget.style.boxShadow = '';
+                                        }}
+                                    ></div>
+                                    <i
+                                        className={`${skill.icon} text-sm md:text-base text-slate-500 transition-all`}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = skill.color;
+                                            e.currentTarget.style.filter = `drop-shadow(0 0 10px ${skill.color}) brightness(1.5)`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = '';
+                                            e.currentTarget.style.filter = '';
+                                        }}
+                                    ></i>
                                     <span className="text-[10px] md:text-[11px] font-black text-slate-400 group-hover/skill:text-white uppercase transition-colors tracking-widest truncate">{skill.name}</span>
                                 </div>
                             ))}
