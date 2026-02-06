@@ -10,6 +10,7 @@ interface CardData {
 }
 
 const INITIAL_CARDS: CardData[] = [
+    { id: 0, title: 'Welcome!', content: 'Swipe left or right to explore the cards and learn more about me!' },
     { id: 1, title: 'Introduction', content: 'Hello! I am Mubin. Swipe the cards to explore my journey.' },
     { id: 2, title: 'Education', content: 'Currently pursuing a B.Sc. in Software Engineering at Daffodil International University.' },
     { id: 3, title: 'Hobby', content: 'Enjoys exploring computers, editing digital content, and learning new software tools.' },
@@ -21,7 +22,8 @@ const INITIAL_CARDS: CardData[] = [
     { id: 9, title: 'Time Management', content: 'Maintains discipline in balancing academic work, self-learning, and personal projects.' },
     { id: 10, title: 'Continuous Learner', content: 'Always learning new technologies, frameworks, and tools to improve professional skills.' },
     { id: 11, title: 'UI/UX Designer', content: 'Passionately designing user-friendly interfaces and engaging experiences with a focus on aesthetics and functionality.' },
-    { id: 12, title: 'Career Goal', content: 'Aspires to become a successful software professional with strong technical and practical expertise.' }
+    { id: 12, title: 'Research-Oriented', content: 'Regularly researches new technologies, software trends, and best practices using online resources.' },
+    { id: 13, title: 'Life Goal', content: 'Aspires to become a successful software professional with strong technical and practical expertise.' }
 ];
 
 const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: number; isTop: boolean; onSwipe: (id: number) => void; total: number }) => {
@@ -63,8 +65,9 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
         }
     };
 
-    // Get card display value (A, 2-10, J, Q, K)
+    // Get card display value (DUCK, A, 2-10, J, Q, K)
     const getCardValue = (id: number) => {
+        if (id === 0) return 'DUCK';
         if (id === 1) return 'A';
         if (id === 11) return 'J';
         if (id === 12) return 'Q';
@@ -103,64 +106,129 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
             className="absolute top-0 left-0 w-full cursor-grab active:cursor-grabbing origin-bottom group"
         >
             {/* Playing card design */}
-            <div className="relative w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-200">
+            <div className={`relative w-full h-full rounded-2xl shadow-2xl overflow-hidden border-4 ${data.id === 0
+                ? 'bg-gradient-to-br from-[#0a0a0a] via-[#2a0a0f] to-[#1a0608] border-[#4a0a14]'
+                : 'bg-white border-gray-200'
+                }`}>
                 {/* Ornate border */}
-                <div className="absolute inset-0 border-4 border-red-600/30 rounded-2xl">
-                    <div className="absolute inset-2 border border-red-500/20 rounded-xl" />
+                <div className={`absolute inset-0 border-4 rounded-2xl ${data.id === 0 ? 'border-[#4a0a14]/30' : 'border-red-600/30'
+                    }`}>
+                    <div className={`absolute inset-2 border rounded-xl ${data.id === 0 ? 'border-white/10' : 'border-red-500/20'
+                        }`} />
                 </div>
 
                 {/* Corner decorations - Top Left */}
                 <div className="absolute top-4 left-4 flex flex-col items-center">
-                    <div className="text-red-600 font-black text-3xl leading-none">{cardValue}</div>
-                    <div className="w-7 h-7 mt-1">
-                        <svg viewBox="0 0 24 24" fill="currentColor" className="text-black">
-                            <path d="M12 2C12 2 6 8 6 12C6 15 8 16 10 16C10 16 9 18 9 20C9 21 10 22 12 22C14 22 15 21 15 20C15 18 14 16 14 16C16 16 18 15 18 12C18 8 12 2 12 2Z" />
-                        </svg>
-                    </div>
+                    <div className={`font-black leading-none ${data.id === 0
+                        ? 'text-white text-xl'
+                        : 'text-red-600 text-3xl'
+                        }`}>{cardValue}</div>
+                    {data.id !== 0 ? (
+                        <div className="w-8 h-8 mt-1">
+                            <svg viewBox="0 0 32 32" className="w-full h-full drop-shadow-sm">
+                                <defs>
+                                    <linearGradient id={`diamond-grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#ff1a1a" />
+                                        <stop offset="100%" stopColor="#990000" />
+                                    </linearGradient>
+                                    <linearGradient id={`diamond-shine-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="white" stopOpacity="0.6" />
+                                        <stop offset="100%" stopColor="white" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M16 3L23 16L16 29L9 16L16 3Z" fill={`url(#diamond-grad-${index})`} />
+                                <path d="M16 3L20 16L16 24L12 16L16 3Z" fill={`url(#diamond-shine-${index})`} />
+                            </svg>
+                        </div>
+                    ) : (
+                        <div className="w-7 h-7 mt-1">
+                            <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm">
+                                <defs>
+                                    <linearGradient id={`star-grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#ffd700" />
+                                        <stop offset="100%" stopColor="#b8860b" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M12 2L14.5 9.5L22 10L16.5 15L18 22L12 18L6 22L7.5 15L2 10L9.5 9.5L12 2Z" fill={`url(#star-grad-${index})`} />
+                                <path d="M12 2L14.5 9.5L12 18L7.5 15L12 2Z" fill="white" fillOpacity="0.3" />
+                            </svg>
+                        </div>
+                    )}
                 </div>
 
                 {/* Corner decorations - Bottom Right */}
                 <div className="absolute bottom-4 right-4 flex flex-col items-center rotate-180">
-                    <div className="text-red-600 font-black text-3xl leading-none">{cardValue}</div>
-                    <div className="w-7 h-7 mt-1">
-                        <svg viewBox="0 0 24 24" fill="currentColor" className="text-black">
-                            <path d="M12 2C12 2 6 8 6 12C6 15 8 16 10 16C10 16 9 18 9 20C9 21 10 22 12 22C14 22 15 21 15 20C15 18 14 16 14 16C16 16 18 15 18 12C18 8 12 2 12 2Z" />
-                        </svg>
-                    </div>
+                    <div className={`font-black leading-none ${data.id === 0
+                        ? 'text-white text-xl'
+                        : 'text-red-600 text-3xl'
+                        }`}>{cardValue}</div>
+                    {data.id !== 0 ? (
+                        <div className="w-8 h-8 mt-1">
+                            <svg viewBox="0 0 32 32" className="w-full h-full drop-shadow-sm">
+                                <use href={`#diamond-def-${index}`} />
+                                <path d="M16 3L23 16L16 29L9 16L16 3Z" fill={`url(#diamond-grad-${index})`} />
+                                <path d="M16 3L20 16L16 24L12 16L16 3Z" fill={`url(#diamond-shine-${index})`} />
+                            </svg>
+                        </div>
+                    ) : (
+                        <div className="w-7 h-7 mt-1">
+                            <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-sm">
+                                <path d="M12 2L14.5 9.5L22 10L16.5 15L18 22L12 18L6 22L7.5 15L2 10L9.5 9.5L12 2Z" fill={`url(#star-grad-${index})`} />
+                                <path d="M12 2L14.5 9.5L12 18L7.5 15L12 2Z" fill="white" fillOpacity="0.3" />
+                            </svg>
+                        </div>
+                    )}
                 </div>
 
                 {/* Center content area */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-12">
                     {/* Decorative top flourish */}
                     <div className="mb-6 flex items-center gap-2">
-                        <div className="w-12 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
-                        <div className="w-2 h-2 rounded-full bg-red-600/70 rotate-45 transform" />
-                        <div className="w-12 h-px bg-gradient-to-l from-transparent via-red-500/50 to-transparent" />
+                        <div className={`w-12 h-0.5 bg-gradient-to-r from-transparent ${data.id === 0 ? 'via-yellow-400' : 'via-red-600'
+                            } to-transparent opacity-70`} />
+                        <div className={`w-3 h-3 rounded-sm rotate-45 transform shadow-sm ${data.id === 0
+                            ? 'bg-gradient-to-br from-yellow-300 to-yellow-600'
+                            : 'bg-gradient-to-br from-red-500 to-red-800'
+                            }`} />
+                        <div className={`w-12 h-0.5 bg-gradient-to-l from-transparent ${data.id === 0 ? 'via-yellow-400' : 'via-red-600'
+                            } to-transparent opacity-70`} />
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-2xl md:text-3xl font-black text-center mb-6 leading-tight text-gray-900">
-                        {data.title.split(' ').map((word, i) => (
-                            <span key={i} className={i === 0 ? 'text-red-600' : 'text-black'}>
-                                {i > 0 && ' '}
-                                {word}
-                            </span>
-                        ))}
+                    <h2 className={`text-2xl md:text-3xl font-black text-center mb-6 leading-tight ${data.id === 0 ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-white' : 'text-gray-900'
+                        }`}>
+                        {data.id === 0 ? (
+                            data.title
+                        ) : (
+                            data.title.split(' ').map((word, i) => (
+                                <span key={i} className={i === 0 ? 'text-red-600' : 'text-black'}>
+                                    {i > 0 && ' '}
+                                    {word}
+                                </span>
+                            ))
+                        )}
                     </h2>
 
                     {/* Divider */}
-                    <div className="w-16 h-1 bg-red-500/30 rounded-full mb-6" />
+                    <div className={`w-16 h-1 rounded-full mb-6 ${data.id === 0 ? 'bg-white/40' : 'bg-red-500/30'
+                        }`} />
 
                     {/* Content */}
-                    <p className="text-center text-gray-800 text-sm md:text-base leading-relaxed max-w-xs">
+                    <p className={`text-center text-sm md:text-base leading-relaxed max-w-xs ${data.id === 0 ? 'text-white/95' : 'text-gray-800'
+                        }`}>
                         {data.content}
                     </p>
 
                     {/* Decorative bottom flourish */}
                     <div className="mt-6 flex items-center gap-2">
-                        <div className="w-12 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
-                        <div className="w-2 h-2 rounded-full bg-red-600/70 rotate-45 transform" />
-                        <div className="w-12 h-px bg-gradient-to-l from-transparent via-red-500/50 to-transparent" />
+                        <div className={`w-12 h-0.5 bg-gradient-to-r from-transparent ${data.id === 0 ? 'via-yellow-400' : 'via-red-600'
+                            } to-transparent opacity-70`} />
+                        <div className={`w-3 h-3 rounded-sm rotate-45 transform shadow-sm ${data.id === 0
+                            ? 'bg-gradient-to-br from-yellow-300 to-yellow-600'
+                            : 'bg-gradient-to-br from-red-500 to-red-800'
+                            }`} />
+                        <div className={`w-12 h-0.5 bg-gradient-to-l from-transparent ${data.id === 0 ? 'via-yellow-400' : 'via-red-600'
+                            } to-transparent opacity-70`} />
                     </div>
                 </div>
 
@@ -227,11 +295,11 @@ export const About = () => {
                     <span className="font-semibold">Back to Home</span>
                 </Link>
 
-                <div className="flex-1 flex flex-col items-center justify-center min-h-[600px]">
+                <div className="flex-1 flex flex-col items-center justify-start pt-16 min-h-[400px]">
                     <motion.h1
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-black mb-12 text-center"
+                        className="text-4xl md:text-5xl font-black mb-8 text-center"
                     >
                         More <span className="text-primary">About Me</span>
                     </motion.h1>
@@ -257,79 +325,114 @@ export const About = () => {
                                 className="absolute inset-0 rounded-3xl overflow-hidden"
                             >
                                 <div className="relative w-full h-full bg-gradient-to-br from-[#0a0a0a] to-[#1a0a0f] rounded-3xl border border-primary/20 backdrop-blur-xl shadow-2xl">
-                                    {/* Decorative background elements */}
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] animate-pulse" />
-                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-[80px] animate-pulse delay-500" />
-
-                                    {/* Confetti particles */}
-                                    {[...Array(15)].map((_, i) => (
-                                        <motion.div
-                                            key={i}
-                                            initial={{ y: -20, opacity: 0 }}
-                                            animate={{
-                                                y: [0, 100, 200],
-                                                opacity: [0, 1, 0],
-                                                rotate: [0, 360]
-                                            }}
-                                            transition={{
-                                                duration: 3,
-                                                delay: i * 0.1,
-                                                repeat: Infinity,
-                                                repeatDelay: 2
-                                            }}
-                                            className="absolute w-2 h-2 rounded-full"
-                                            style={{
-                                                left: `${10 + (i * 5)}%`,
-                                                backgroundColor: i % 2 === 0 ? '#80011f' : '#ffffff',
-                                                opacity: 0.6
-                                            }}
-                                        />
-                                    ))}
+                                    {/* Glossy floating card suits decoration */}
+                                    {[...Array(6)].map((_, i) => {
+                                        const suitType = i % 4;
+                                        return (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ opacity: 0, scale: 0 }}
+                                                animate={{
+                                                    opacity: [0.3, 0.5, 0.3],
+                                                    scale: [1, 1.15, 1],
+                                                    y: [0, -15, 0]
+                                                }}
+                                                transition={{
+                                                    duration: 6 + i * 1.5,
+                                                    repeat: Infinity,
+                                                    delay: i * 0.8
+                                                }}
+                                                className="absolute"
+                                                style={{
+                                                    left: `${(i * 15) + 8}%`,
+                                                    top: `${(i % 3) * 30 + 10}%`,
+                                                    width: `${50 + (i * 10)}px`,
+                                                    height: `${50 + (i * 10)}px`,
+                                                    filter: 'drop-shadow(0 4px 8px rgba(128, 1, 31, 0.3))'
+                                                }}
+                                            >
+                                                <svg viewBox="0 0 64 64" className="w-full h-full">
+                                                    <defs>
+                                                        <linearGradient id={`glossy-${i}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                                            <stop offset="0%" style={{ stopColor: '#ff002f', stopOpacity: 0.9 }} />
+                                                            <stop offset="50%" style={{ stopColor: '#80011f', stopOpacity: 1 }} />
+                                                            <stop offset="100%" style={{ stopColor: '#3a0010', stopOpacity: 0.8 }} />
+                                                        </linearGradient>
+                                                        <radialGradient id={`shine-${i}`} cx="30%" cy="30%">
+                                                            <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 0.4 }} />
+                                                            <stop offset="100%" style={{ stopColor: '#ffffff', stopOpacity: 0 }} />
+                                                        </radialGradient>
+                                                    </defs>
+                                                    {/* Diamond */}
+                                                    {suitType === 0 && (
+                                                        <>
+                                                            <path d="M32 8 L52 32 L32 56 L12 32 Z" fill={`url(#glossy-${i})`} />
+                                                            <path d="M32 8 L52 32 L32 56 L12 32 Z" fill={`url(#shine-${i})`} />
+                                                            <path d="M32 12 L48 32 L32 52 L16 32 Z" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                                                        </>
+                                                    )}
+                                                    {/* Heart */}
+                                                    {suitType === 1 && (
+                                                        <>
+                                                            <path d="M32 54 C32 54 12 38 12 26 C12 18 18 12 24 12 C28 12 32 16 32 16 C32 16 36 12 40 12 C46 12 52 18 52 26 C52 38 32 54 32 54 Z" fill={`url(#glossy-${i})`} />
+                                                            <path d="M32 54 C32 54 12 38 12 26 C12 18 18 12 24 12 C28 12 32 16 32 16 C32 16 36 12 40 12 C46 12 52 18 52 26 C52 38 32 54 32 54 Z" fill={`url(#shine-${i})`} />
+                                                            <ellipse cx="24" cy="20" rx="6" ry="5" fill="rgba(255,255,255,0.25)" />
+                                                        </>
+                                                    )}
+                                                    {/* Club */}
+                                                    {suitType === 2 && (
+                                                        <>
+                                                            <circle cx="32" cy="20" r="10" fill={`url(#glossy-${i})`} />
+                                                            <circle cx="22" cy="32" r="10" fill={`url(#glossy-${i})`} />
+                                                            <circle cx="42" cy="32" r="10" fill={`url(#glossy-${i})`} />
+                                                            <path d="M26 36 L38 36 L36 52 L28 52 Z" fill={`url(#glossy-${i})`} />
+                                                            <circle cx="32" cy="20" r="10" fill={`url(#shine-${i})`} />
+                                                            <circle cx="28" cy="17" r="3" fill="rgba(255,255,255,0.3)" />
+                                                        </>
+                                                    )}
+                                                    {/* Spade */}
+                                                    {suitType === 3 && (
+                                                        <>
+                                                            <path d="M32 12 C32 12 12 28 12 36 C12 44 18 48 24 48 C26 48 28 47 28 47 L28 54 L36 54 L36 47 C36 47 38 48 40 48 C46 48 52 44 52 36 C52 28 32 12 32 12 Z" fill={`url(#glossy-${i})`} />
+                                                            <path d="M32 12 C32 12 12 28 12 36 C12 44 18 48 24 48 C26 48 28 47 28 47 L28 54 L36 54 L36 47 C36 47 38 48 40 48 C46 48 52 44 52 36 C52 28 32 12 32 12 Z" fill={`url(#shine-${i})`} />
+                                                            <ellipse cx="26" cy="30" rx="5" ry="6" fill="rgba(255,255,255,0.2)" />
+                                                        </>
+                                                    )}
+                                                </svg>
+                                            </motion.div>
+                                        );
+                                    })}
 
                                     {/* Content */}
                                     <div className="relative h-full flex flex-col items-center justify-center p-8 z-10">
-                                        {/* Success icon */}
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                                            className="mb-6"
-                                        >
-                                            <div className="w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
-                                                <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </div>
-                                        </motion.div>
-
                                         <motion.p
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="text-2xl md:text-3xl font-black mb-2 text-center bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
+                                            transition={{ delay: 0.2 }}
+                                            className="text-3xl md:text-4xl font-black mb-4 text-center bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
                                         >
-                                            You finally made it to the end!
+                                            That's all about me!
                                         </motion.p>
 
                                         <motion.p
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            transition={{ delay: 0.4 }}
-                                            className="text-primary text-lg font-semibold mb-8"
+                                            transition={{ delay: 0.3 }}
+                                            className="text-primary text-lg font-semibold mb-10"
                                         >
-                                            Thank you!
+                                            Thank you for exploring
                                         </motion.p>
 
                                         <motion.button
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5 }}
+                                            transition={{ delay: 0.4 }}
                                             onClick={resetCards}
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             className="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold flex items-center gap-3 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 border border-primary/20"
                                         >
-                                            <RotateCcw size={20} className="animate-spin-slow" />
+                                            <RotateCcw size={20} />
                                             <span>Start Over</span>
                                         </motion.button>
 
