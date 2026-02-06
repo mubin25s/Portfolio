@@ -5,13 +5,43 @@ import { Menu, X, FileText } from 'lucide-react';
 export const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('#');
 
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        // Intersection Observer for active section tracking
+        const sections = ['projects', 'skills', 'stack', 'contact'];
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -70% 0px', // Trigger when section is in the top portion
+            threshold: 0
+        };
+
+        const observerCallback = (entries: IntersectionObserverEntry[]) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveSection(`#${entry.target.id}`);
+                } else if (window.scrollY < 100) {
+                    setActiveSection('#');
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
     }, []);
 
     const navLinks = [
@@ -30,6 +60,7 @@ export const Navbar = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-2xl font-black tracking-tighter"
+                    onClick={() => setActiveSection('#')}
                 >
                     MUBIN<span className="text-primary">.</span>
                 </motion.a>
@@ -40,7 +71,9 @@ export const Navbar = () => {
                         <a
                             key={link.name}
                             href={link.href}
-                            className="text-sm font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+                            onClick={() => setActiveSection(link.href)}
+                            className={`text-sm font-bold uppercase tracking-widest transition-all duration-300 ${activeSection === link.href ? 'text-primary scale-110' : 'text-slate-400 hover:text-white'
+                                }`}
                         >
                             {link.name}
                         </a>
@@ -70,8 +103,12 @@ export const Navbar = () => {
                                 <a
                                     key={link.name}
                                     href={link.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-lg font-bold uppercase tracking-widest text-slate-400 hover:text-white"
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        setActiveSection(link.href);
+                                    }}
+                                    className={`text-lg font-bold uppercase tracking-widest transition-colors ${activeSection === link.href ? 'text-primary' : 'text-slate-400 hover:text-white'
+                                        }`}
                                 >
                                     {link.name}
                                 </a>

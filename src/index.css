@@ -48,10 +48,11 @@ body {
 @layer components {
   .glass-card {
     @apply bg-white/5 border border-white/10 rounded-2xl transition-all duration-300;
-    /* Reduced blur for performance */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* Further reduced blur for maximum performance */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     will-change: transform, opacity;
+    transform: translateZ(0);
   }
   
   .glass-card:hover {
@@ -67,6 +68,7 @@ body {
     @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-black font-semibold 
            transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20;
     will-change: transform;
+    transform: translateZ(0);
   }
 
   .name-white {
@@ -86,6 +88,8 @@ body {
   .snap-section {
     @apply h-screen flex items-center justify-center relative snap-start overflow-hidden;
     will-change: transform;
+    transform: translateZ(0);
+    content-visibility: auto; /* Significant boost for multi-section pages */
   }
 }
 

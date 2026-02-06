@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
 import { Github } from 'lucide-react';
 
 const projects = [
@@ -25,10 +25,10 @@ const projects = [
         image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee"
     },
     {
-        title: "Goku Portfolio",
+        title: "Portfolio",
         description: "Stunning personal portfolio with dark theme, glassmorphism, and interactive animations.",
-        link: "https://mubin25s.github.io/Portfolio-Goku/",
-        github: "https://github.com/mubin25s/Portfolio-Goku",
+        link: "https://mubin25s.github.io/Portfolio/",
+        github: "https://github.com/mubin25s/Portfolio",
         image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
     },
     {
@@ -53,40 +53,52 @@ const displayProjects = [...projects, ...projects, ...projects];
 export const Projects = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const [baseX, setBaseX] = useState(0);
+    const [isWheeling, setIsWheeling] = useState(false);
+    const wheelTimeout = useRef<number | null>(null);
     const x = useMotionValue(0);
 
     // Auto-scroll speed
     const speed = -0.5; // Negative for leftward movement
 
-    useAnimationFrame((t, delta) => {
-        if (!isDragging) {
+    useAnimationFrame((_, delta) => {
+        if (!isDragging && !isWheeling) {
             // Update x based on time delta for consistent speed across refresh rates
             const moveBy = speed * (delta / 16);
             const newX = x.get() + moveBy;
-
-            // Wrap logic: when we move past 1/3 of the container, jump back
-            // This works because displayProjects is 3x the original list
-            if (containerRef.current) {
-                const totalWidth = containerRef.current.scrollWidth;
-                const setWidth = totalWidth / 3;
-
-                if (newX <= -setWidth) {
-                    x.set(newX + setWidth);
-                } else if (newX > 0) {
-                    x.set(newX - setWidth);
-                } else {
-                    x.set(newX);
-                }
-            }
+            wrapX(newX);
         }
     });
 
-    const handleDragStart = () => setIsDragging(true);
-    const handleDragEnd = () => {
-        setIsDragging(false);
-        // After drag, ensure x is still wrapped correctly next frame
+    const wrapX = (currentX: number) => {
+        if (!containerRef.current) return;
+
+        const totalWidth = containerRef.current.scrollWidth;
+        const setWidth = totalWidth / 3;
+
+        if (currentX <= -setWidth) {
+            x.set(currentX + setWidth);
+        } else if (currentX > 0) {
+            x.set(currentX - setWidth);
+        } else {
+            x.set(currentX);
+        }
     };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+            setIsWheeling(true);
+            const newX = x.get() - e.deltaX;
+            wrapX(newX);
+
+            if (wheelTimeout.current) window.clearTimeout(wheelTimeout.current);
+            wheelTimeout.current = window.setTimeout(() => {
+                setIsWheeling(false);
+            }, 50); // Faster reset
+        }
+    };
+
+    const handleDragStart = () => setIsDragging(true);
+    const handleDragEnd = () => setIsDragging(false);
 
     return (
         <section id="projects" className="snap-section py-8 overflow-hidden flex flex-col justify-center">
@@ -98,71 +110,71 @@ export const Projects = () => {
                 </div>
             </div>
 
-            <div className="relative flex overflow-hidden cursor-grab active:cursor-grabbing">
+            <div
+                className="relative flex overflow-hidden cursor-grab active:cursor-grabbing"
+                onWheel={handleWheel}
+            >
                 <motion.div
                     ref={containerRef}
                     className="flex gap-4 md:gap-6 py-4 select-none"
-                    style={{ x }}
+                    style={{ x, willChange: 'transform' }}
                     drag="x"
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
-                    dragElastic={0.05}
+                    dragElastic={0.02}
                     dragMomentum={true}
                     onUpdate={(latest) => {
-                        // Keep x within bounds during drag
-                        if (isDragging && containerRef.current) {
-                            const totalWidth = containerRef.current.scrollWidth;
-                            const setWidth = totalWidth / 3;
-                            const currentX = latest.x as number;
-
-                            if (currentX <= -setWidth) {
-                                x.set(currentX + setWidth);
-                            } else if (currentX > 0) {
-                                x.set(currentX - setWidth);
-                            }
+                        if (isDragging) {
+                            wrapX(latest.x as number);
                         }
                     }}
                 >
                     {displayProjects.map((project, index) => (
                         <div
                             key={index}
-                            className="relative w-[210px] md:w-[280px] lg:w-[320px] flex-shrink-0 group/card pointer-events-none"
+                            className="relative w-[210px] md:w-[280px] lg:w-[320px] flex-shrink-0 group/card"
                         >
-                            <div className="glass-card aspect-[11/16] rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 relative bg-white/[0.03]">
+                            <div className="glass-card aspect-[11/16] rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 relative bg-white/[0.08]">
                                 <img
                                     src={project.image}
                                     alt={project.title}
                                     loading="lazy"
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/card:scale-110"
                                 />
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                                {/* Hover Overlay */}
+                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                                    <motion.a
+                                        href={project.link}
+                                        target="_blank"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="px-6 py-2.5 bg-primary text-black rounded-full font-bold text-xs tracking-wider shadow-2xl opacity-0 scale-90 group-hover/card:opacity-100 group-hover/card:scale-100 transition-all duration-300 delay-75"
+                                    >
+                                        LIVE DEMO
+                                    </motion.a>
+                                    <motion.a
+                                        href={project.github}
+                                        target="_blank"
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="w-10 h-10 bg-white/20 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 opacity-0 scale-90 group-hover/card:opacity-100 group-hover/card:scale-100 transition-all duration-300 delay-150"
+                                    >
+                                        <Github size={18} />
+                                    </motion.a>
+                                </div>
 
-                                <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end">
-                                    <h3 className="text-sm md:text-xl font-black mb-1 text-white leading-tight">
+                                {/* Bottom Info */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 pointer-events-none"></div>
+
+                                <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 pointer-events-none transition-transform duration-500 group-hover/card:-translate-y-2">
+                                    <h3 className="text-sm md:text-lg font-black text-white leading-tight mb-1 drop-shadow-lg">
                                         {project.title.toUpperCase()}
                                     </h3>
 
-                                    <p className="text-slate-400 text-[10px] md:text-xs line-clamp-2 mb-4 hidden md:block">
+                                    <p className="text-slate-300 text-[10px] md:text-xs line-clamp-1 opacity-80">
                                         {project.description}
                                     </p>
-
-                                    <div className="flex items-center gap-2 mt-2 pointer-events-auto">
-                                        <a
-                                            href={project.link}
-                                            target="_blank"
-                                            className="flex-1 py-1.5 md:py-2 bg-primary text-black text-center rounded-xl font-bold text-[9px] md:text-xs hover:bg-white transition-colors"
-                                        >
-                                            VIEW PROJECT
-                                        </a>
-                                        <a
-                                            href={project.github}
-                                            target="_blank"
-                                            className="w-8 h-8 md:w-10 md:h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center rounded-xl border border-white/10 hover:bg-white/20 transition-all"
-                                        >
-                                            <Github size={16} />
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -170,9 +182,7 @@ export const Projects = () => {
                 </motion.div>
             </div>
 
-            <div className="mt-12 text-center">
-                <p className="text-slate-600 text-[10px] tracking-[0.5em] uppercase animate-pulse">Infinity Series • Swipe to Explore</p>
-            </div>
+
         </section>
     );
 };

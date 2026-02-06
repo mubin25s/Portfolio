@@ -6,13 +6,13 @@ import * as random from 'maath/random/dist/maath-random.esm';
 
 function Stars() {
     const ref = useRef<any>(null);
-    // Reduced star count for better performance
-    const sphere = useMemo(() => random.inSphere(new Float32Array(3000), { radius: 1.5 }), []);
+    // Further reduced star count for maximum performance
+    const sphere = useMemo(() => random.inSphere(new Float32Array(1500), { radius: 1.5 }), []);
 
     useFrame((_state, delta) => {
         if (ref.current) {
-            ref.current.rotation.x -= delta / 20;
-            ref.current.rotation.y -= delta / 25;
+            ref.current.rotation.x -= delta / 30; // Slower rotation is often smoother
+            ref.current.rotation.y -= delta / 35;
         }
     });
 
@@ -33,12 +33,17 @@ function Stars() {
 
 export const CanvasBackground = () => {
     return (
-        <div className="canvas-container" style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
-            {/* Added performance optimization flags to Canvas */}
+        <div className="canvas-container">
             <Canvas
+                flat
                 camera={{ position: [0, 0, 1] }}
-                gl={{ antialias: false, powerPreference: "high-performance" }}
-                dpr={[1, 2]} // Limit pixel ratio
+                gl={{
+                    antialias: false,
+                    powerPreference: "high-performance",
+                    stencil: false,
+                    depth: false
+                }}
+                dpr={[1, 1.5]} // More aggressive DRP limit
             >
                 <Stars />
             </Canvas>

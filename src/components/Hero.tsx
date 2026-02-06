@@ -49,11 +49,21 @@ export const Hero = () => {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="flex-1 text-center lg:text-left z-10"
                 >
-                    <motion.div
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-primary font-bold tracking-[0.2em] uppercase mb-2 text-xs h-6"
+                        className="text-4xl md:text-6xl lg:text-7xl font-black mb-2 leading-tight"
+                    >
+                        <span className="name-white">K. M. Fathum</span> <br />
+                        <span className="name-accent">Mubin</span> <span className="name-white">Sachcha</span>
+                    </motion.h1>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-primary font-bold tracking-[0.2em] uppercase mb-6 text-xs h-6"
                     >
                         <span>{currentText}</span>
                         <motion.span
@@ -62,15 +72,7 @@ export const Hero = () => {
                             className="inline-block w-1.5 h-4 bg-primary ml-1 align-middle"
                         />
                     </motion.div>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 leading-tight"
-                    >
-                        <span className="name-white">K. M. Fathum</span> <br />
-                        <span className="name-accent">Mubin</span> <span className="name-white">Sachcha</span>
-                    </motion.h1>
+
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -79,7 +81,6 @@ export const Hero = () => {
                     >
                         Curious, tech-driven, and constantly evolving—an editor and software engineer with a sharp eye for detail and a drive to build, learn, and grow beyond limits.
                     </motion.p>
-                    ...
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -95,17 +96,38 @@ export const Hero = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.6 }}
-                        className="flex flex-wrap items-center justify-center lg:justify-start gap-3 text-slate-400"
+                        className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-slate-400"
                     >
-                        <a href="https://github.com/mubin25s" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-github text-lg"></i></a>
-                        <a href="https://linkedin.com/in/fathum-mubin-090937280" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-linkedin text-lg"></i></a>
-                        <a href="mailto:fathummubin26@gmail.com" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-solid fa-envelope text-lg"></i></a>
-                        <a href="https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-reddit text-lg"></i></a>
-                        <a href="https://x.com/FathumMubin26" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-x-twitter text-lg"></i></a>
-                        <a href="https://discord.com/users/mubin.26" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-discord text-lg"></i></a>
-                        <a href="https://wa.me/8801302910017" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-whatsapp text-lg"></i></a>
-                        <a href="https://www.instagram.com/fathum.mubin.26" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-instagram text-lg"></i></a>
-                        <a href="https://www.facebook.com/share/14RTXWtMn8Y/" target="_blank" className="w-8 h-8 flex items-center justify-center rounded-full border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-facebook text-lg"></i></a>
+                        {[
+                            { icon: "fa-brands fa-github", href: "https://github.com/mubin25s", color: "#fff" },
+                            { icon: "fa-brands fa-linkedin-in", href: "https://linkedin.com/in/fathum-mubin-090937280", color: "#0077b5" },
+                            { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#00f2fe" },
+                            { icon: "fa-brands fa-reddit-alien", href: "https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV", color: "#ff4500" },
+                            { icon: "fa-brands fa-x-twitter", href: "https://x.com/FathumMubin26", color: "#fff" },
+                            { icon: "fa-brands fa-discord", href: "https://discord.com/users/mubin.26", color: "#5865f2" },
+                            { icon: "fa-brands fa-whatsapp", href: "https://wa.me/8801302910017", color: "#25d366" },
+                            { icon: "fa-brands fa-instagram", href: "https://www.instagram.com/fathum.mubin.26", color: "#e4405f" },
+                            { icon: "fa-brands fa-facebook-f", href: "https://www.facebook.com/share/14RTXWtMn8Y/", color: "#1877f2" }
+                        ].map((social, i) => (
+                            <motion.a
+                                key={i}
+                                href={social.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                whileHover={{
+                                    y: -4,
+                                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                                    color: social.color,
+                                    borderColor: social.color
+                                }}
+                                whileTap={{ scale: 0.9 }}
+                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05] border border-white/10 backdrop-blur-md transition-all duration-300 group relative"
+                                style={{ boxShadow: `0 0 0 rgba(0, 0, 0, 0)` }}
+                            >
+                                <i className={`${social.icon} text-lg transition-transform duration-300 group-hover:scale-110 relative z-10`}></i>
+                                <div className="absolute inset-0 rounded-xl bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0" style={{ backgroundColor: `${social.color}30` }}></div>
+                            </motion.a>
+                        ))}
                     </motion.div>
                 </motion.div>
 
