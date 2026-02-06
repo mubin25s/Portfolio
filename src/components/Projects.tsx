@@ -147,6 +147,7 @@ export const Projects = () => {
                                     <motion.a
                                         href={project.link}
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         className="px-6 py-2.5 bg-primary text-black rounded-full font-bold text-xs tracking-wider shadow-2xl opacity-0 scale-90 group-hover/card:opacity-100 group-hover/card:scale-100 transition-all duration-300 delay-75"
@@ -156,6 +157,7 @@ export const Projects = () => {
                                     <motion.a
                                         href={project.github}
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.9 }}
                                         className="w-10 h-10 bg-white/20 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all duration-300 opacity-0 scale-90 group-hover/card:opacity-100 group-hover/card:scale-100 transition-all duration-300 delay-150"

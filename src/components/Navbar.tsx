@@ -77,7 +77,7 @@ export const Navbar = () => {
                             {link.name}
                         </a>
                     ))}
-                    <a href="/resume.pdf" target="_blank" className="flex items-center gap-2 px-6 py-2 rounded-full border border-primary/50 text-primary text-sm font-bold hover:bg-primary hover:text-black transition-all duration-300">
+                    <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-2 rounded-full border border-primary/50 text-primary text-sm font-bold hover:bg-primary hover:text-black transition-all duration-300">
                         <FileText size={16} /> Resume
                     </a>
                 </div>
@@ -112,7 +112,7 @@ export const Navbar = () => {
                                     {link.name}
                                 </a>
                             ))}
-                            <a href="/resume.pdf" target="_blank" className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-primary text-black font-black uppercase tracking-widest">
+                            <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-primary text-black font-black uppercase tracking-widest">
                                 <FileText size={20} /> Resume
                             </a>
                         </div>
