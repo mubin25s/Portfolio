@@ -116,7 +116,7 @@ const SectionFlipCard = ({
 
                 {/* Back Side: The Details (Skills Grid) */}
                 <div
-                    className="absolute inset-0 backface-hidden glass-card border-0 flex flex-col p-4 md:p-6 rounded-2xl bg-[#0a0a0b] overflow-hidden shadow-2xl"
+                    className="absolute inset-0 backface-hidden glass-card border-0 flex flex-col p-3 md:p-4 rounded-2xl bg-[#0a0a0b] overflow-hidden shadow-2xl"
                     style={{
                         backfaceVisibility: 'hidden',
                         transform: 'rotateY(180deg)'
@@ -125,7 +125,7 @@ const SectionFlipCard = ({
                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none"></div>
                     <div className="relative z-10 flex flex-col h-full">
                         <h4
-                            className="text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-6 py-1 opacity-40"
+                            className="text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-2 py-1 opacity-40"
                         >
                             {title}
                         </h4>
