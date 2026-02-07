@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
 import { Github } from 'lucide-react';
 
@@ -56,6 +56,20 @@ export const Projects = () => {
     const [isWheeling, setIsWheeling] = useState(false);
     const wheelTimeout = useRef<number | null>(null);
     const x = useMotionValue(0);
+    const totalWidthRef = useRef<number>(0);
+
+    // Measure width to avoid layout thrashing in animation loop
+    useEffect(() => {
+        const updateWidth = () => {
+            if (containerRef.current) {
+                totalWidthRef.current = containerRef.current.scrollWidth;
+            }
+        };
+
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
 
     // Auto-scroll speed
     const speed = -0.5; // Negative for leftward movement
@@ -70,11 +84,12 @@ export const Projects = () => {
     });
 
     const wrapX = (currentX: number) => {
-        if (!containerRef.current) return;
+        if (totalWidthRef.current === 0) return;
 
-        const totalWidth = containerRef.current.scrollWidth;
+        const totalWidth = totalWidthRef.current;
         const setWidth = totalWidth / 3;
 
+        // Wrap logic
         if (currentX <= -setWidth) {
             x.set(currentX + setWidth);
         } else if (currentX > 0) {
