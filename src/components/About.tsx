@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
@@ -32,6 +32,13 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
 
     const [exitX, setExitX] = useState(0);
+
+    // Random initial position for "flying in" effect
+    const randomInitial = useMemo(() => ({
+        x: (Math.random() - 0.5) * 4000,
+        y: (Math.random() - 0.5) * 4000,
+        rotate: (Math.random() - 0.5) * 720
+    }), []);
 
     const handleDragEnd = (_: any, info: any) => {
         if (!isTop) return;
@@ -83,21 +90,36 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
                 zIndex: index,
                 x: isTop ? x : 0,
                 rotate: isTop ? rotate : 0,
-                opacity: isTop ? opacity : 1 - (total - 1 - index) * 0.3,
+                opacity: isTop ? opacity : 1 - (total - 1 - index) * 0.05,
                 scale: 1 - (total - 1 - index) * 0.05,
                 y: (total - 1 - index) * 15,
                 aspectRatio: '2.5/3.5'
             }}
-            initial={{ scale: 0.9, opacity: 0, y: 50 }}
+            initial={{
+                scale: 0,
+                opacity: 0,
+                x: randomInitial.x,
+                y: randomInitial.y,
+                rotate: randomInitial.rotate
+            }}
             animate={{
                 scale: 1 - (total - 1 - index) * 0.05,
-                opacity: isTop ? 1 : 1 - (total - 1 - index) * 0.3,
+                opacity: isTop ? 1 : 1 - (total - 1 - index) * 0.05,
                 y: (total - 1 - index) * 15,
-                x: exitX
+                x: exitX,
+                rotate: 0 // Animate to 0 rotation (straight)
             }}
-            transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.25 }}
+            transition={{
+                type: "spring",
+                stiffness: exitX !== 0 ? 500 : 50, // Fast exit, floaty entry
+                damping: exitX !== 0 ? 50 : 20,
+                mass: exitX !== 0 ? 0.5 : 1.5,
+                delay: exitX !== 0 ? 0 : index * 0.05
+            }}
             drag={isTop ? "x" : false}
             dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.1} // More elastic
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }} // Snappy drag release
             onDragEnd={handleDragEnd}
             onAnimationComplete={() => {
                 if (exitX !== 0) onSwipe(data.id);
