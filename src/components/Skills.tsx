@@ -151,9 +151,6 @@ const SkillItem = ({ name, icon, color }: { name: string; icon: string; color: s
     </div>
 );
 
-const coreSkills = ["Full Stack Dev", "Software Architecture", "System Optimization", "Problem Solving", "Web Dev", "UI/UX Engineering"];
-const supportingSkills = ["Fast Learner", "Open Source", "Tech-Curious", "Editing", "Photography"];
-
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -195,10 +192,10 @@ export const Skills = () => {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-6 md:grid-rows-[auto_1fr_1fr] gap-3 lg:gap-4 flex-1 min-h-0"
+                    className="grid grid-cols-1 md:grid-cols-6 md:grid-rows-[1fr_1fr] gap-3 lg:gap-4 flex-1 min-h-0"
                 >
                     {/* 1. Programming Languages */}
-                    <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-3">
+                    <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-2">
                         <SectionFlipCard title="Languages" color="#80011f" frontIcon="fa-solid fa-code">
                             <div className="grid grid-cols-2 gap-y-4 gap-x-4">
                                 {technicalStack[0].skills.map((skill, i) => (
@@ -207,34 +204,6 @@ export const Skills = () => {
                             </div>
                         </SectionFlipCard>
                     </motion.div>
-
-                    {/* 2. Core Competencies */}
-                    <motion.div variants={itemVariants} className="md:col-span-3 md:row-span-1">
-                        <SectionFlipCard title="Systems" color="#80011f" frontIcon="fa-solid fa-brain">
-                            <div className="flex flex-wrap gap-2">
-                                {coreSkills.map((skill, i) => (
-                                    <span key={i} className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/5 text-[10px] font-black uppercase text-slate-400 hover:text-white hover:border-primary/40 transition-all tracking-widest cursor-default">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
-                        </SectionFlipCard>
-                    </motion.div>
-
-                    {/* 3. Aptitudes */}
-                    <motion.div variants={itemVariants} className="md:col-span-1 md:row-span-1">
-                        <SectionFlipCard title="Soft Skills" color="#5c0016" frontIcon="fa-solid fa-bolt">
-                            <div className="flex flex-col gap-3 text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">
-                                {supportingSkills.map((s, i) => (
-                                    <span key={i} className="hover:text-white transition-colors cursor-default flex items-center gap-2">
-                                        <span className="w-1 h-1 bg-secondary rounded-full"></span>
-                                        {s}
-                                    </span>
-                                ))}
-                            </div>
-                        </SectionFlipCard>
-                    </motion.div>
-
                     {/* 4. Engines */}
                     <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-1">
                         <SectionFlipCard title="Frameworks" color="#5c0016" frontIcon="fa-solid fa-layer-group">

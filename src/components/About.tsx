@@ -260,12 +260,7 @@ export const About = () => {
             {/* Animated gradient background */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#161616] to-[#0a0a0a]" />
 
-            {/* Animated mesh gradient overlay */}
-            <div className="absolute inset-0 opacity-30">
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse delay-1000" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
-            </div>
+
 
             {/* Grid pattern overlay */}
             <div className="absolute inset-0 opacity-[0.03]" style={{
