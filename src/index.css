@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tailwindcss";
 
 @theme {
   --color-primary: #80011f; /* Deep Burgundy */
