@@ -92,8 +92,6 @@ export const CodingActivity = () => {
     const [currentStreak, setCurrentStreak] = useState<number | null>(null);
     const [maxStreak, setMaxStreak] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
-    const [lastUpdated, setLastUpdated] = useState<string>('');
-    const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
     const [refreshKey, setRefreshKey] = useState(0);
     const [flashBlue, setFlashBlue] = useState(false);
     const [flashRed, setFlashRed] = useState(false);
@@ -112,14 +110,7 @@ export const CodingActivity = () => {
     const animatedMax = useCountUp(displayMaxStreak, 1800);
 
     const startCountdown = () => {
-        setCountdown(REFRESH_INTERVAL);
         if (countdownRef.current) clearInterval(countdownRef.current);
-        countdownRef.current = setInterval(() => {
-            setCountdown(prev => {
-                if (prev <= 1) { clearInterval(countdownRef.current!); return 0; }
-                return prev - 1;
-            });
-        }, 1000);
     };
 
     const fetchStreaks = async (manual = false) => {
@@ -148,8 +139,6 @@ export const CodingActivity = () => {
 
             setCurrentStreak(newCurrent);
             setMaxStreak(newMax);
-            const now = new Date();
-            setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
             // Force Calendar to remount and fetch updated total contributions
             setRefreshKey(k => k + 1);
@@ -171,11 +160,6 @@ export const CodingActivity = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const formatCountdown = (s: number) => {
-        const m = Math.floor(s / 60);
-        const sec = s % 60;
-        return `${m}:${sec.toString().padStart(2, '0')}`;
-    };
 
     return (
         <section id="activity" className="snap-section px-6 relative flex-col justify-center min-h-screen py-20">
