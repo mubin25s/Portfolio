@@ -71,13 +71,13 @@ function useCountUp(target: number | null, duration = 1800) {
 
 // Skeleton for streak box
 const StreakBoxSkeleton = ({ color }: { color: 'blue' | 'red' }) => (
-    <div className={`flex flex-col items-center justify-center gap-1 px-6 py-3 rounded-2xl border animate-pulse
+    <div className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl border animate-pulse
         ${color === 'blue'
             ? 'bg-blue-500/5 border-blue-500/20'
             : 'bg-red-600/5 border-red-600/20'
-        } w-[140px] h-[70px]`}>
-        <div className={`h-7 w-10 rounded ${color === 'blue' ? 'bg-blue-500/15' : 'bg-red-600/15'}`} />
-        <div className={`h-2 w-20 rounded ${color === 'blue' ? 'bg-blue-500/10' : 'bg-red-600/10'}`} />
+        } w-[100px] h-[50px]`}>
+        <div className={`h-4 w-6 rounded ${color === 'blue' ? 'bg-blue-500/15' : 'bg-red-600/15'}`} />
+        <div className={`h-1.5 w-16 rounded ${color === 'blue' ? 'bg-blue-500/10' : 'bg-red-600/10'}`} />
     </div>
 );
 
@@ -150,7 +150,9 @@ export const CodingActivity = () => {
             setMaxStreak(newMax);
             const now = new Date();
             setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-            if (manual) setRefreshKey(k => k + 1);
+
+            // Force Calendar to remount and fetch updated total contributions
+            setRefreshKey(k => k + 1);
             startCountdown();
         } catch (error) {
             console.error('Error fetching GitHub streak data:', error);
@@ -260,23 +262,23 @@ export const CodingActivity = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.35 }}
-                                            className={`relative flex items-center gap-4 px-5 py-3 rounded-2xl border transition-all duration-500 overflow-hidden
+                                            className={`relative flex items-center gap-3 px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden
                                                 ${flashBlue
                                                     ? 'bg-blue-500/20 border-blue-400 shadow-[0_0_24px_rgba(59,130,246,0.5)]'
                                                     : 'bg-blue-500/5 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]'
                                                 }`}
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none rounded-2xl" />
-                                            <div className="relative w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
-                                                <Flame size={22} className="text-blue-400" />
-                                                <span className="absolute inset-0 rounded-xl border border-blue-400/40 animate-ping opacity-40" />
+                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none rounded-xl" />
+                                            <div className="relative w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
+                                                <Flame size={16} className="text-blue-400" />
+                                                <span className="absolute inset-0 rounded-lg border border-blue-400/40 animate-ping opacity-40" />
                                             </div>
-                                            <div className="relative flex flex-col min-w-[80px]">
-                                                <span className="text-3xl font-black text-blue-300 tabular-nums leading-none tracking-tight">
+                                            <div className="relative flex flex-col min-w-[60px]">
+                                                <span className="text-xl font-black text-blue-300 tabular-nums leading-none tracking-tight">
                                                     {animatedCurrent}
-                                                    <span className="text-blue-400/60 text-base font-bold ml-1">days</span>
+                                                    <span className="text-blue-400/60 text-xs font-bold ml-1">days</span>
                                                 </span>
-                                                <span className="text-[11px] text-blue-400/70 uppercase tracking-widest font-bold mt-1">Current Streak</span>
+                                                <span className="text-[9px] text-blue-400/70 uppercase tracking-widest font-bold mt-0.5">Current Streak</span>
                                             </div>
                                         </motion.div>
                                     </AnimatePresence>
@@ -293,23 +295,23 @@ export const CodingActivity = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.35, delay: 0.08 }}
-                                            className={`relative flex items-center gap-4 px-5 py-3 rounded-2xl border transition-all duration-500 overflow-hidden
+                                            className={`relative flex items-center gap-3 px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden
                                                 ${flashRed
                                                     ? 'bg-red-600/20 border-red-500 shadow-[0_0_24px_rgba(220,38,38,0.5)]'
                                                     : 'bg-red-600/5 border-red-600/30 hover:bg-red-600/10 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]'
                                                 }`}
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-transparent pointer-events-none rounded-2xl" />
-                                            <div className="relative w-11 h-11 rounded-xl bg-red-600/15 border border-red-600/25 flex items-center justify-center shrink-0">
-                                                <Trophy size={22} className="text-red-400" />
-                                                <span className="absolute inset-0 rounded-xl border border-red-500/40 animate-ping opacity-40" />
+                                            <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-transparent pointer-events-none rounded-xl" />
+                                            <div className="relative w-8 h-8 rounded-lg bg-red-600/15 border border-red-600/25 flex items-center justify-center shrink-0">
+                                                <Trophy size={16} className="text-red-400" />
+                                                <span className="absolute inset-0 rounded-lg border border-red-500/40 animate-ping opacity-40" />
                                             </div>
-                                            <div className="relative flex flex-col min-w-[80px]">
-                                                <span className="text-3xl font-black text-red-300 tabular-nums leading-none tracking-tight">
+                                            <div className="relative flex flex-col min-w-[60px]">
+                                                <span className="text-xl font-black text-red-300 tabular-nums leading-none tracking-tight">
                                                     {animatedMax}
-                                                    <span className="text-red-400/60 text-base font-bold ml-1">days</span>
+                                                    <span className="text-red-400/60 text-xs font-bold ml-1">days</span>
                                                 </span>
-                                                <span className="text-[11px] text-red-400/70 uppercase tracking-widest font-bold mt-1">Highest Streak</span>
+                                                <span className="text-[9px] text-red-400/70 uppercase tracking-widest font-bold mt-0.5">Highest Streak</span>
                                             </div>
                                         </motion.div>
                                     </AnimatePresence>
