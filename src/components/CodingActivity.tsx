@@ -1,12 +1,46 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { GitHubCalendar } from 'react-github-calendar';
-import { Github, ExternalLink, GitBranch, GitPullRequest, Flame, Trophy } from 'lucide-react';
+import { Github, ExternalLink, GitBranch, GitPullRequest, Flame, Trophy, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+
+// Animated counter hook
+function useCountUp(target: number | null, duration = 1800) {
+    const [count, setCount] = useState(0);
+    const rafRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (target === null) return;
+        const start = performance.now();
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease-out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.round(eased * target));
+            if (progress < 1) {
+                rafRef.current = requestAnimationFrame(animate);
+            }
+        };
+        rafRef.current = requestAnimationFrame(animate);
+        return () => {
+            if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        };
+    }, [target, duration]);
+
+    return count;
+}
+
+// Skeleton loader for a stat pill
+const StatSkeleton = () => (
+    <div className="flex flex-col items-center bg-white/5 border border-white/10 px-4 py-2 rounded-xl animate-pulse w-[90px]">
+        <div className="h-6 w-12 bg-white/10 rounded mb-1" />
+        <div className="h-2 w-16 bg-white/10 rounded" />
+    </div>
+);
 
 export const CodingActivity = () => {
     // Theme matching the deep burgundy colors from index.css
-    // Darker base for empty contribution blocks to match site theme
     const explicitTheme = {
         light: ['#e5e5e5', '#fca5a5', '#ef4444', '#b91c1c', '#80011f'],
         dark: ['#2a2a2a', '#5c0016', '#80011f', '#b3002b', '#e60037'],
@@ -15,22 +49,39 @@ export const CodingActivity = () => {
     const [currentStreak, setCurrentStreak] = useState<number | null>(null);
     const [maxStreak, setMaxStreak] = useState<number | null>(null);
     const [totalContributions, setTotalContributions] = useState<number | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState<string>('');
+
+    const statsRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(statsRef, { once: true, margin: '-60px' });
+
+    // Only start counting once visible
+    const displayCurrentStreak = isInView ? currentStreak : null;
+    const displayMaxStreak = isInView ? maxStreak : null;
+    const displayTotal = isInView ? totalContributions : null;
+
+    const animatedCurrent = useCountUp(displayCurrentStreak, 1400);
+    const animatedMax = useCountUp(displayMaxStreak, 1800);
+    const animatedTotal = useCountUp(displayTotal, 2200);
+
+    const fetchStreaks = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get('https://streak-stats.demolab.com/?user=mubin25s&type=json');
+            const data = response.data;
+            setCurrentStreak(data.currentStreak?.length ?? 0);
+            setMaxStreak(data.longestStreak?.length ?? 0);
+            setTotalContributions(data.totalContributions ?? 0);
+            const now = new Date();
+            setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        } catch (error) {
+            console.error("Error fetching GitHub streak data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchStreaks = async () => {
-            try {
-                // streak-stats.demolab.com mirrors GitHub's own streak calculation exactly
-                const response = await axios.get('https://streak-stats.demolab.com/?user=mubin25s&type=json');
-                const data = response.data;
-
-                setCurrentStreak(data.currentStreak?.length ?? 0);
-                setMaxStreak(data.longestStreak?.length ?? 0);
-                setTotalContributions(data.totalContributions ?? 0);
-            } catch (error) {
-                console.error("Error fetching GitHub streak data:", error);
-            }
-        };
-
         fetchStreaks();
     }, []);
 
@@ -90,36 +141,80 @@ export const CodingActivity = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-white tracking-tight">mubin25s</h3>
-                                    <p className="text-xs text-slate-400 font-medium mt-0.5">GitHub Contributions & Streaks</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-xs text-slate-400 font-medium">GitHub Contributions &amp; Streaks</p>
+                                        {lastUpdated && (
+                                            <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-semibold">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                                                {lastUpdated}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Streak Stats */}
-                            <div className="flex items-center gap-3 flex-wrap">
-                                {currentStreak !== null && (
-                                    <div className="flex flex-col items-center bg-white/5 border border-orange-400/20 px-4 py-2 rounded-xl">
-                                        <span className="flex items-center gap-1.5 text-orange-400 font-black text-xl">
-                                            <Flame size={18} className="shrink-0" />{currentStreak}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Current Streak</span>
-                                    </div>
+                            <div ref={statsRef} className="flex items-center gap-3 flex-wrap">
+                                {loading ? (
+                                    <>
+                                        <StatSkeleton />
+                                        <StatSkeleton />
+                                        <StatSkeleton />
+                                    </>
+                                ) : (
+                                    <>
+                                        {currentStreak !== null && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.4 }}
+                                                className="flex flex-col items-center bg-orange-400/5 border border-orange-400/25 px-4 py-2 rounded-xl hover:bg-orange-400/10 transition-colors"
+                                            >
+                                                <span className="flex items-center gap-1.5 text-orange-400 font-black text-xl tabular-nums">
+                                                    <Flame size={18} className="shrink-0" />{animatedCurrent}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Current Streak</span>
+                                            </motion.div>
+                                        )}
+                                        {maxStreak !== null && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.4, delay: 0.1 }}
+                                                className="flex flex-col items-center bg-yellow-400/5 border border-yellow-400/25 px-4 py-2 rounded-xl hover:bg-yellow-400/10 transition-colors"
+                                            >
+                                                <span className="flex items-center gap-1.5 text-yellow-400 font-black text-xl tabular-nums">
+                                                    <Trophy size={18} className="shrink-0" />{animatedMax}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Highest Streak</span>
+                                            </motion.div>
+                                        )}
+                                        {totalContributions !== null && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.4, delay: 0.2 }}
+                                                className="flex flex-col items-center bg-primary/5 border border-primary/25 px-4 py-2 rounded-xl hover:bg-primary/10 transition-colors"
+                                            >
+                                                <span className="flex items-center gap-1.5 text-primary font-black text-xl tabular-nums">
+                                                    {animatedTotal.toLocaleString()}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Total Contributions</span>
+                                            </motion.div>
+                                        )}
+                                    </>
                                 )}
-                                {maxStreak !== null && (
-                                    <div className="flex flex-col items-center bg-white/5 border border-yellow-400/20 px-4 py-2 rounded-xl">
-                                        <span className="flex items-center gap-1.5 text-yellow-400 font-black text-xl">
-                                            <Trophy size={18} className="shrink-0" />{maxStreak}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Longest Streak</span>
-                                    </div>
-                                )}
-                                {totalContributions !== null && (
-                                    <div className="flex flex-col items-center bg-white/5 border border-primary/20 px-4 py-2 rounded-xl">
-                                        <span className="flex items-center gap-1.5 text-primary font-black text-xl">
-                                            {totalContributions.toLocaleString()}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-0.5">Total Contributions</span>
-                                    </div>
-                                )}
+
+                                {/* Refresh Button */}
+                                <button
+                                    onClick={fetchStreaks}
+                                    disabled={loading}
+                                    title="Refresh stats"
+                                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2.5 rounded-xl border border-white/10 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                                </button>
+
                                 <a
                                     href="https://github.com/mubin25s"
                                     target="_blank"
