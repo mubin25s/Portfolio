@@ -39,6 +39,8 @@ const StatSkeleton = () => (
     </div>
 );
 
+const REFRESH_INTERVAL = 300; // seconds (5 minutes)
+
 export const CodingActivity = () => {
     // Theme matching the deep burgundy colors from index.css
     const explicitTheme = {
@@ -51,9 +53,13 @@ export const CodingActivity = () => {
     const [totalContributions, setTotalContributions] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
+    const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+    const [refreshKey, setRefreshKey] = useState(0); // forces calendar re-render on manual refresh
 
     const statsRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(statsRef, { once: true, margin: '-60px' });
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Only start counting once visible
     const displayCurrentStreak = isInView ? currentStreak : null;
@@ -64,8 +70,22 @@ export const CodingActivity = () => {
     const animatedMax = useCountUp(displayMaxStreak, 1800);
     const animatedTotal = useCountUp(displayTotal, 2200);
 
-    const fetchStreaks = async () => {
-        setLoading(true);
+    const startCountdown = () => {
+        setCountdown(REFRESH_INTERVAL);
+        if (countdownRef.current) clearInterval(countdownRef.current);
+        countdownRef.current = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(countdownRef.current!);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const fetchStreaks = async (manual = false) => {
+        if (manual) setLoading(true);
         try {
             const response = await axios.get('https://streak-stats.demolab.com/?user=mubin25s&type=json');
             const data = response.data;
@@ -74,6 +94,8 @@ export const CodingActivity = () => {
             setTotalContributions(data.totalContributions ?? 0);
             const now = new Date();
             setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+            if (manual) setRefreshKey(k => k + 1);
+            startCountdown();
         } catch (error) {
             console.error("Error fetching GitHub streak data:", error);
         } finally {
@@ -83,7 +105,25 @@ export const CodingActivity = () => {
 
     useEffect(() => {
         fetchStreaks();
+
+        // Auto-refresh every 5 minutes
+        intervalRef.current = setInterval(() => {
+            fetchStreaks();
+        }, REFRESH_INTERVAL * 1000);
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (countdownRef.current) clearInterval(countdownRef.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Format countdown as mm:ss
+    const formatCountdown = (s: number) => {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+    };
 
     return (
         <section id="activity" className="snap-section px-6 relative flex-col justify-center min-h-screen py-20">
@@ -141,12 +181,26 @@ export const CodingActivity = () => {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-white tracking-tight">mubin25s</h3>
-                                    <div className="flex items-center gap-2 mt-0.5">
+                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                         <p className="text-xs text-slate-400 font-medium">GitHub Contributions &amp; Streaks</p>
+
+                                        {/* LIVE badge */}
+                                        <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-black uppercase tracking-widest border border-emerald-400/30 bg-emerald-400/5 px-1.5 py-0.5 rounded-md">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                                            LIVE
+                                        </span>
+
                                         {lastUpdated && (
-                                            <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-semibold">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
-                                                {lastUpdated}
+                                            <span className="text-[10px] text-slate-500 font-medium">
+                                                Updated {lastUpdated}
+                                            </span>
+                                        )}
+
+                                        {/* Countdown to next refresh */}
+                                        {!loading && (
+                                            <span className="flex items-center gap-1 text-[10px] text-slate-500 font-mono">
+                                                <RefreshCw size={9} className="opacity-60" />
+                                                {formatCountdown(countdown)}
                                             </span>
                                         )}
                                     </div>
@@ -165,6 +219,7 @@ export const CodingActivity = () => {
                                     <>
                                         {currentStreak !== null && (
                                             <motion.div
+                                                key={`cs-${currentStreak}`}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4 }}
@@ -178,6 +233,7 @@ export const CodingActivity = () => {
                                         )}
                                         {maxStreak !== null && (
                                             <motion.div
+                                                key={`ms-${maxStreak}`}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, delay: 0.1 }}
@@ -191,6 +247,7 @@ export const CodingActivity = () => {
                                         )}
                                         {totalContributions !== null && (
                                             <motion.div
+                                                key={`tc-${totalContributions}`}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, delay: 0.2 }}
@@ -207,9 +264,13 @@ export const CodingActivity = () => {
 
                                 {/* Refresh Button */}
                                 <button
-                                    onClick={fetchStreaks}
+                                    onClick={() => {
+                                        if (intervalRef.current) clearInterval(intervalRef.current);
+                                        fetchStreaks(true);
+                                        intervalRef.current = setInterval(() => fetchStreaks(), REFRESH_INTERVAL * 1000);
+                                    }}
                                     disabled={loading}
-                                    title="Refresh stats"
+                                    title="Refresh now"
                                     className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2.5 rounded-xl border border-white/10 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -230,6 +291,7 @@ export const CodingActivity = () => {
                         <div className="overflow-x-auto text-slate-300 w-full flex justify-center pb-8 px-4 md:px-8 custom-scrollbar">
                             <div className="min-w-fit">
                                 <GitHubCalendar
+                                    key={refreshKey}
                                     username="mubin25s"
                                     colorScheme="dark"
                                     theme={explicitTheme}
