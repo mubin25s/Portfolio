@@ -71,7 +71,7 @@ export const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="text-primary font-bold tracking-[0.2em] uppercase mb-6 text-xs h-6"
+                        className="text-primary font-bold tracking-[0.2em] uppercase mb-6 text-[10px] md:text-xs h-6"
                     >
                         <span>{currentText}</span>
                         <motion.span
@@ -85,7 +85,7 @@ export const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className="text-slate-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0"
+                        className="text-slate-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0 px-4 md:px-0"
                     >
                         I build modern web applications with React & Node.js
                     </motion.p>
@@ -94,20 +94,21 @@ export const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
-                        className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-8"
+                        className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10"
                     >
-                        <a href="#projects" className="btn-primary py-2 px-6 text-sm">View Projects</a>
-                        <a href="#contact" className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 backdrop-blur-sm font-semibold text-sm">Contact Me</a>
+                        <a href="#projects" className="btn-primary py-2.5 px-8 text-sm w-full sm:w-auto text-center">View Projects</a>
+                        <a href="#contact" className="px-8 py-2.5 rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 backdrop-blur-sm font-semibold text-sm w-full sm:w-auto text-center">Contact Me</a>
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.6 }}
-                        className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-slate-400"
+                        className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4 text-slate-400 px-2 md:px-0"
                     >
                         {[
                             { icon: "fa-brands fa-github", href: "https://github.com/mubin25s", color: "#fff" },
+                            { icon: "fa-brands fa-gitlab", href: "https://gitlab.com/mubin25s", color: "#FC6D26" },
                             { icon: "fa-brands fa-linkedin-in", href: "https://linkedin.com/in/fathum-mubin-090937280", color: "#0077b5" },
                             { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#80011f" },
                             { icon: "fa-brands fa-x-twitter", href: "https://x.com/FathumMubin26", color: "#fff" },
@@ -124,14 +125,14 @@ export const Hero = () => {
                                 rel="noopener noreferrer"
                                 whileHover={{
                                     y: -6,
-                                    scale: 1.3,
+                                    scale: 1.2,
                                     color: social.color
                                 }}
                                 whileTap={{ scale: 0.9 }}
-                                className="w-10 h-10 flex items-center justify-center text-slate-400 transition-all duration-300 group"
+                                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-slate-400 transition-all duration-300 group"
                             >
                                 <i
-                                    className={`${social.icon} text-2xl transition-all duration-300 group-hover:brightness-150`}
+                                    className={`${social.icon} text-xl md:text-2xl transition-all duration-300 group-hover:brightness-150`}
                                     style={{ filter: `drop-shadow(0 0 2px rgba(255,255,255,0.1))` }}
                                     onMouseEnter={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 10px ${social.color}) brightness(1.4)`}
                                     onMouseLeave={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 2px rgba(255,255,255,0.1))`}
@@ -139,6 +140,7 @@ export const Hero = () => {
                             </motion.a>
                         ))}
                     </motion.div>
+
                 </motion.div>
 
                 <motion.div

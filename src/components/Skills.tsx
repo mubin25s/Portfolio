@@ -167,21 +167,22 @@ export const Skills = () => {
                     viewport={{ once: true }}
                     className="flex flex-col mb-12"
                 >
-                    <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none mb-2">
-                        Technical <span className="text-primary">Skills</span>
+                    <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none mb-2">
+                        Technical <span className="text-primary brightness-125">Skills</span>
                     </h2>
-                    <div className="w-20 h-1 bg-primary mb-4"></div>
+                    <div className="w-16 md:w-20 h-1 bg-primary mb-4"></div>
                     <p className="text-slate-400 text-sm md:text-base max-w-2xl">
                         A focused overview of the technologies and tools I use to build robust, scalable, and modern applications.
                     </p>
                 </motion.div>
 
+                {/* Desktop View: Interactive Flip Cards */}
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 min-h-[400px]"
+                    className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]"
                 >
                     {technicalStack.map((category, idx) => (
                         <motion.div key={idx} variants={itemVariants} className="col-span-1">
@@ -199,6 +200,39 @@ export const Skills = () => {
                         </motion.div>
                     ))}
                 </motion.div>
+
+                {/* Mobile View: Clean Accessible Grid */}
+                <div className="md:hidden flex flex-col gap-6">
+                    {technicalStack.map((category, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="glass-card p-6 border-white/5 bg-white/[0.02]"
+                        >
+                            <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-3">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary brightness-125">
+                                    <i className={`${category.frontIcon} text-xl`}></i>
+                                </div>
+                                <h3 className="text-lg font-black uppercase tracking-[0.2em] text-white/90">{category.title}</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                                {category.skills.map((skill, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+                                            <i className={`${skill.icon} text-base`} style={{ color: skill.color }}></i>
+                                        </div>
+                                        <span className="text-[11px] font-bold text-slate-300 uppercase tracking-tight truncate">
+                                            {skill.name}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
         </section>
     );

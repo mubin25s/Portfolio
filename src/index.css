@@ -66,7 +66,7 @@ body {
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#80011f] to-[#5c0016];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ff3d6a] to-[#80011f];
     will-change: filter;
   }
 
@@ -85,14 +85,14 @@ body {
   }
 
   .name-accent {
-    background: linear-gradient(to right, #80011f 20%, #fff 40%, #fff 60%, #80011f 80%);
+    background: linear-gradient(to right, #ff3d6a 20%, #fff 40%, #fff 60%, #ff3d6a 80%);
     background-size: 200% auto;
     @apply bg-clip-text text-transparent animate-shimmer;
     will-change: background-position;
   }
 
   .snap-section {
-    @apply h-screen flex items-center justify-center relative snap-start overflow-hidden;
+    @apply min-h-screen flex items-center justify-center relative snap-start overflow-hidden py-20 md:py-0;
     will-change: transform;
     transform: translateZ(0);
     content-visibility: auto; /* Significant boost for multi-section pages */

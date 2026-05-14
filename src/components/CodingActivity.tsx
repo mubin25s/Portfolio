@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { GitHubCalendar } from 'react-github-calendar';
-import { Github, ExternalLink, GitBranch, GitPullRequest, Flame, Trophy, RefreshCw } from 'lucide-react';
+import { Github, GitBranch, GitPullRequest, Flame, Trophy, RefreshCw, Gitlab } from 'lucide-react';
 // GitHub contributions API — same source used by react-github-calendar
 const GH_CONTRIB_API = 'https://github-contributions-api.jogruber.de/v4';
 
@@ -169,14 +169,13 @@ export const CodingActivity = () => {
                 <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-secondary/5 rounded-full blur-[150px]"></div>
             </div>
 
-            <div className="container max-w-5xl mx-auto flex flex-col items-center relative z-10">
-                <motion.div
+            <div className="container max-w-5xl mx-auto flex flex-col items-center relative z-10">                <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-center mb-16 w-full relative"
+                    className="text-center mb-10 md:mb-16 w-full relative"
                 >
-                    <h2 className="text-4xl md:text-6xl font-black leading-tight text-white mb-4">
+                    <h2 className="text-3xl md:text-6xl font-black leading-tight text-white mb-4">
                         Coding <span className="text-gradient">Activity</span>
                     </h2>
                 </motion.div>
@@ -210,31 +209,29 @@ export const CodingActivity = () => {
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
 
                         {/* ── Card Header — single row: identity | streak boxes | controls ── */}
-                        <div ref={statsRef} className="w-full flex flex-wrap items-center justify-between gap-4 p-6 border-b border-white/5 mb-6">
+                        <div ref={statsRef} className="w-full flex flex-col md:flex-row items-center justify-between gap-6 p-4 md:p-6 border-b border-white/5 mb-6">
 
                             {/* LEFT — Identity */}
-                            <div className="flex items-center gap-4 shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-500">
-                                    <Github size={24} />
+                            <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-500">
+                                    <Github size={20} className="md:w-6 md:h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white tracking-tight">mubin25s</h3>
+                                    <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">mubin25s</h3>
                                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                        <p className="text-xs text-slate-400 font-medium">GitHub Contributions &amp; Streaks</p>
+                                        <p className="text-[10px] md:text-xs text-slate-400 font-medium">GitHub Contributions</p>
 
                                         {/* LIVE badge */}
-                                        <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-black uppercase tracking-widest border border-emerald-400/30 bg-emerald-400/5 px-1.5 py-0.5 rounded-md">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                                        <span className="flex items-center gap-1 text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest border border-emerald-400/30 bg-emerald-400/5 px-1.5 py-0.5 rounded-md">
+                                            <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
                                             LIVE
                                         </span>
-
-
                                     </div>
                                 </div>
                             </div>
 
                             {/* CENTER — Streak Boxes */}
-                            <div className="flex items-center gap-3 flex-1 justify-center flex-nowrap">
+                            <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center w-full">
                                 {/* Current Streak — BLUE */}
                                 {loading ? (
                                     <StreakBoxSkeleton color="blue" />
@@ -246,23 +243,22 @@ export const CodingActivity = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.35 }}
-                                            className={`relative flex items-center gap-3 px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden
+                                            className={`relative flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden flex-1 md:flex-none
                                                 ${flashBlue
                                                     ? 'bg-blue-500/20 border-blue-400 shadow-[0_0_24px_rgba(59,130,246,0.5)]'
                                                     : 'bg-blue-500/5 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]'
                                                 }`}
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none rounded-xl" />
-                                            <div className="relative w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
-                                                <Flame size={16} className="text-blue-400" />
-                                                <span className="absolute inset-0 rounded-lg border border-blue-400/40 animate-ping opacity-40" />
+                                            <div className="relative w-6 h-6 md:w-8 md:h-8 rounded-lg bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
+                                                <Flame size={14} className="text-blue-400 md:w-4 md:h-4" />
                                             </div>
-                                            <div className="relative flex flex-col min-w-[60px]">
-                                                <span className="text-xl font-black text-blue-300 tabular-nums leading-none tracking-tight">
+                                            <div className="relative flex flex-col min-w-[50px] md:min-w-[60px]">
+                                                <span className="text-lg md:text-xl font-black text-blue-300 tabular-nums leading-none tracking-tight">
                                                     {animatedCurrent}
-                                                    <span className="text-blue-400/60 text-xs font-bold ml-1">days</span>
+                                                    <span className="text-blue-400/60 text-[10px] font-bold ml-1">d</span>
                                                 </span>
-                                                <span className="text-[9px] text-blue-400/70 uppercase tracking-widest font-bold mt-0.5">Current Streak</span>
+                                                <span className="text-[8px] md:text-[9px] text-blue-400/70 uppercase tracking-widest font-bold mt-0.5">Current</span>
                                             </div>
                                         </motion.div>
                                     </AnimatePresence>
@@ -279,23 +275,22 @@ export const CodingActivity = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.35, delay: 0.08 }}
-                                            className={`relative flex items-center gap-3 px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden
+                                            className={`relative flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden flex-1 md:flex-none
                                                 ${flashRed
                                                     ? 'bg-red-600/20 border-red-500 shadow-[0_0_24px_rgba(220,38,38,0.5)]'
                                                     : 'bg-red-600/5 border-red-600/30 hover:bg-red-600/10 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]'
                                                 }`}
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-transparent pointer-events-none rounded-xl" />
-                                            <div className="relative w-8 h-8 rounded-lg bg-red-600/15 border border-red-600/25 flex items-center justify-center shrink-0">
-                                                <Trophy size={16} className="text-red-400" />
-                                                <span className="absolute inset-0 rounded-lg border border-red-500/40 animate-ping opacity-40" />
+                                            <div className="relative w-6 h-6 md:w-8 md:h-8 rounded-lg bg-red-600/15 border border-red-600/25 flex items-center justify-center shrink-0">
+                                                <Trophy size={14} className="text-red-400 md:w-4 md:h-4" />
                                             </div>
-                                            <div className="relative flex flex-col min-w-[60px]">
-                                                <span className="text-xl font-black text-red-300 tabular-nums leading-none tracking-tight">
+                                            <div className="relative flex flex-col min-w-[50px] md:min-w-[60px]">
+                                                <span className="text-lg md:text-xl font-black text-red-300 tabular-nums leading-none tracking-tight">
                                                     {animatedMax}
-                                                    <span className="text-red-400/60 text-xs font-bold ml-1">days</span>
+                                                    <span className="text-red-400/60 text-[10px] font-bold ml-1">d</span>
                                                 </span>
-                                                <span className="text-[9px] text-red-400/70 uppercase tracking-widest font-bold mt-0.5">Highest Streak</span>
+                                                <span className="text-[8px] md:text-[9px] text-red-400/70 uppercase tracking-widest font-bold mt-0.5">Highest</span>
                                             </div>
                                         </motion.div>
                                     </AnimatePresence>
@@ -303,7 +298,7 @@ export const CodingActivity = () => {
                             </div>
 
                             {/* RIGHT — Controls */}
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-center">
                                 <button
                                     onClick={() => {
                                         if (intervalRef.current) clearInterval(intervalRef.current);
@@ -312,7 +307,7 @@ export const CodingActivity = () => {
                                     }}
                                     disabled={loading}
                                     title="Refresh now"
-                                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2.5 rounded-xl border border-white/10 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                                 </button>
@@ -321,17 +316,27 @@ export const CodingActivity = () => {
                                     href="https://github.com/mubin25s"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20"
+                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20"
                                 >
-                                    <span className="hidden sm:inline">View Profile</span>
-                                    <ExternalLink size={14} />
+                                    <Github size={14} />
+                                    <span>GitHub</span>
+                                </a>
+
+                                <a
+                                    href="https://gitlab.com/mubin25s"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20"
+                                >
+                                    <Gitlab size={14} />
+                                    <span>GitLab</span>
                                 </a>
                             </div>
                         </div>
 
                         {/* Calendar Body */}
-                        <div className="overflow-x-auto text-slate-300 w-full flex justify-center pb-8 px-4 md:px-8 custom-scrollbar">
-                            <div className="min-w-fit">
+                        <div className="overflow-x-auto text-slate-300 w-full flex justify-start md:justify-center pb-8 px-4 md:px-8 custom-scrollbar">
+                            <div className="min-w-fit py-4">
                                 <GitHubCalendar
                                     key={refreshKey}
                                     username="mubin25s"
