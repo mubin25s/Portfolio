@@ -57,7 +57,7 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
     // Random initial position for "flying in" effect
     const randomInitial = useMemo(() => createCardEntrance(data.id), [data.id]);
 
-    const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent | undefined, info: PanInfo) => {
         if (!isTop) return;
         const threshold = 100;
         if (info.offset.x > threshold) {
