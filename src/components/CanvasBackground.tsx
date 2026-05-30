@@ -1,11 +1,11 @@
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
-// @ts-ignore
 import * as random from 'maath/random/dist/maath-random.esm';
+import * as THREE from 'three';
 
 function Stars() {
-    const ref = useRef<any>(null);
+    const ref = useRef<THREE.Points | null>(null);
     // Further reduced star count for maximum performance
     const sphere = useMemo(() => random.inSphere(new Float32Array(800), { radius: 1.5 }), []);
 

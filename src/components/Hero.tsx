@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
-export const Hero = () => {
-    const roles = [
-        "Frontend Developer",
-        "Full Stack Developer"
-    ];
+const ROLES = [
+    'Frontend Developer',
+    'Full Stack Developer'
+];
 
+export const Hero = () => {
     const [roleIndex, setRoleIndex] = useState(0);
     const [currentText, setCurrentText] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
@@ -15,7 +15,7 @@ export const Hero = () => {
 
     useEffect(() => {
         const handleTyping = () => {
-            const fullText = roles[roleIndex];
+            const fullText = ROLES[roleIndex];
 
             if (isDeleting) {
                 setCurrentText(fullText.substring(0, currentText.length - 1));
@@ -29,14 +29,14 @@ export const Hero = () => {
                 setTimeout(() => setIsDeleting(true), 2000);
             } else if (isDeleting && currentText === '') {
                 setIsDeleting(false);
-                setRoleIndex((prev) => (prev + 1) % roles.length);
+                setRoleIndex((prev) => (prev + 1) % ROLES.length);
                 setSpeed(150);
             }
         };
 
         const timer = setTimeout(handleTyping, speed);
         return () => clearTimeout(timer);
-    }, [currentText, isDeleting, roleIndex, speed, roles]);
+    }, [currentText, isDeleting, roleIndex, speed]);
 
     return (
         <section id="home" className="snap-section overflow-hidden px-6 pt-28 md:pt-16 flex flex-col justify-center">
