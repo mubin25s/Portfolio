@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, AnimatePresence, type PanInfo } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 
@@ -26,6 +26,27 @@ const INITIAL_CARDS: CardData[] = [
     { id: 13, title: 'Life Goal', content: 'Aspires to become a successful software professional with strong technical and practical expertise.' }
 ];
 
+const seededValue = (seed: number) => {
+    const value = Math.sin(seed) * 10000;
+    return value - Math.floor(value);
+};
+
+const createCardEntrance = (seed: number) => ({
+    x: (seededValue(seed * 1.37) - 0.5) * 4000,
+    y: (seededValue(seed * 2.11) - 0.5) * 4000,
+    rotate: (seededValue(seed * 3.73) - 0.5) * 720
+});
+
+const FLOATING_PARTICLES = Array.from({ length: 20 }, (_, index) => {
+    const seed = index + 1;
+    return {
+        left: `${seededValue(seed * 1.91) * 100}%`,
+        top: `${seededValue(seed * 2.53) * 100}%`,
+        duration: 5 + seededValue(seed * 3.17) * 10,
+        delay: seededValue(seed * 4.01) * 5
+    };
+});
+
 const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: number; isTop: boolean; onSwipe: (id: number) => void; total: number }) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-18, 18]);
@@ -34,13 +55,9 @@ const Card = ({ data, index, isTop, onSwipe, total }: { data: CardData; index: n
     const [exitX, setExitX] = useState(0);
 
     // Random initial position for "flying in" effect
-    const randomInitial = useMemo(() => ({
-        x: (Math.random() - 0.5) * 4000,
-        y: (Math.random() - 0.5) * 4000,
-        rotate: (Math.random() - 0.5) * 720
-    }), []);
+    const randomInitial = useMemo(() => createCardEntrance(data.id), [data.id]);
 
-    const handleDragEnd = (_: any, info: any) => {
+    const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent | undefined, info: PanInfo) => {
         if (!isTop) return;
         const threshold = 100;
         if (info.offset.x > threshold) {
@@ -292,15 +309,15 @@ export const About = () => {
 
             {/* Floating particles */}
             <div className="absolute inset-0">
-                {[...Array(20)].map((_, i) => (
+                {FLOATING_PARTICLES.map((particle, i) => (
                     <div
                         key={i}
                         className="absolute w-1 h-1 bg-primary/20 rounded-full"
                         style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animation: `float ${5 + Math.random() * 10}s ease-in-out infinite`,
-                            animationDelay: `${Math.random() * 5}s`
+                            left: particle.left,
+                            top: particle.top,
+                            animation: `float ${particle.duration}s ease-in-out infinite`,
+                            animationDelay: `${particle.delay}s`
                         }}
                     />
                 ))}
