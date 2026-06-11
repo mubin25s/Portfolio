@@ -3,6 +3,14 @@ import { Github, ExternalLink, Gitlab } from 'lucide-react';
 
 const featuredProjects = [
     {
+        title: "Course Grade Calculator",
+        description: "A web application designed to help students track and calculate their course grades effortlessly. It features an intuitive interface for managing assignments and computing final scores.",
+        techStack: ["HTML", "CSS", "JavaScript"],
+        link: "https://course-grade-calculator-ten.vercel.app/X_Calculator/Grade_Calculator/index.html",
+        github: "https://github.com/mubin25s/Course-Grade-Calculator",
+        image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c"
+    },
+    {
         title: "Pet Shop",
         description: "A full-featured MERN stack application with real-time chat and order management for an online pet store. Includes an admin dashboard, user authentication, and responsive design.",
         techStack: ["React", "Node.js", "Express", "MongoDB", "Tailwind CSS"],
