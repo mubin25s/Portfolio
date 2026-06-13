@@ -107,16 +107,10 @@ export const Hero = () => {
                         className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4 text-slate-400 px-2 md:px-0"
                     >
                         {[
-                            { icon: "fa-brands fa-github", href: "https://github.com/mubin25s", color: "#fff" },
-                            { icon: "fa-brands fa-gitlab", href: "https://gitlab.com/mubin25s", color: "#FC6D26" },
-                            { icon: "fa-brands fa-linkedin-in", href: "https://linkedin.com/in/fathum-mubin-090937280", color: "#0077b5" },
-                            { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#80011f" },
-                            { icon: "fa-brands fa-x-twitter", href: "https://x.com/FathumMubin26", color: "#fff" },
-                            { icon: "fa-brands fa-discord", href: "https://discord.com/users/mubin.26", color: "#5865f2" },
-                            { icon: "fa-brands fa-reddit-alien", href: "https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV", color: "#ff4500" },
-                            { icon: "fa-brands fa-whatsapp", href: "https://wa.me/8801302910017", color: "#25d366" },
-                            { icon: "fa-brands fa-instagram", href: "https://www.instagram.com/fathum.mubin.26", color: "#e4405f" },
-                            { icon: "fa-brands fa-facebook-f", href: "https://www.facebook.com/share/14RTXWtMn8Y/", color: "#1877f2" }
+                            { icon: "fa-brands fa-github", href: "https://github.com/mubin25s", color: "#fff", label: "GitHub" },
+                            { icon: "fa-brands fa-gitlab", href: "https://gitlab.com/mubin25s", color: "#FC6D26", label: "GitLab" },
+                            { icon: "fa-brands fa-linkedin-in", href: "https://linkedin.com/in/fathum-mubin-090937280", color: "#0077b5", label: "LinkedIn" },
+                            { icon: "fa-solid fa-envelope", href: "mailto:fathummubin26@gmail.com", color: "#80011f", label: "Email" },
                         ].map((social, i) => (
                             <motion.a
                                 key={i}

@@ -91,6 +91,34 @@ body {
     will-change: background-position;
   }
 
+  /* Contact section social link animated pills */
+  .contact-social-link {
+    color: #94a3b8; /* slate-400 default */
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contact-social-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--hover-bg, rgba(255,255,255,0.08));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .contact-social-link:hover::before {
+    opacity: 1;
+  }
+
+  .contact-social-link:hover {
+    color: var(--hover-color, #fff);
+    border-color: var(--hover-color, rgba(255,255,255,0.3));
+    box-shadow: 0 0 18px var(--hover-glow, rgba(255,255,255,0.1)), 0 4px 20px rgba(0,0,0,0.3);
+    text-decoration: none;
+  }
+
   .snap-section {
     @apply min-h-screen flex items-center justify-center relative snap-start overflow-hidden py-20 md:py-0;
     will-change: transform;

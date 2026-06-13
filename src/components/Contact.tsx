@@ -53,18 +53,41 @@ export const Contact = () => {
 
                         {/* Social Links Sub-section */}
                         <div className="mt-8 pt-4">
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">Social Connect</p>
-                            <div className="flex flex-wrap gap-2 md:gap-2.5">
-                                <a href="https://github.com/mubin25s" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-github text-base md:text-lg"></i></a>
-                                <a href="https://gitlab.com/mubin25s" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-gitlab text-base md:text-lg"></i></a>
-                                <a href="https://linkedin.com/in/fathum-mubin-090937280" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-linkedin text-base md:text-lg"></i></a>
-                                <a href="mailto:fathummubin26@gmail.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-solid fa-envelope text-base md:text-lg"></i></a>
-                                <a href="https://x.com/FathumMubin26" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-x-twitter text-base md:text-lg"></i></a>
-                                <a href="https://discord.com/users/mubin.26" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-discord text-base md:text-lg"></i></a>
-                                <a href="https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-reddit text-base md:text-lg"></i></a>
-                                <a href="https://wa.me/8801302910017" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-whatsapp text-base md:text-lg"></i></a>
-                                <a href="https://www.instagram.com/fathum.mubin.26" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-instagram text-base md:text-lg"></i></a>
-                                <a href="https://www.facebook.com/share/14RTXWtMn8Y/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:border-primary hover:text-primary transition-all duration-300"><i className="fa-brands fa-facebook text-base md:text-lg"></i></a>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-5">Find Me On</p>
+                            <div className="flex flex-wrap gap-5">
+                                {[
+                                    { icon: "fa-brands fa-github",       href: "https://github.com/mubin25s",                          color: "#ffffff" },
+                                    { icon: "fa-brands fa-gitlab",        href: "https://gitlab.com/mubin25s",                          color: "#FC6D26" },
+                                    { icon: "fa-brands fa-linkedin-in",   href: "https://linkedin.com/in/fathum-mubin-090937280",        color: "#0077b5" },
+                                    { icon: "fa-solid fa-envelope",       href: "mailto:fathummubin26@gmail.com",                       color: "#c0394f" },
+                                    { icon: "fa-brands fa-x-twitter",     href: "https://x.com/FathumMubin26",                          color: "#ffffff" },
+                                    { icon: "fa-brands fa-discord",       href: "https://discord.com/users/mubin.26",                   color: "#5865f2" },
+                                    { icon: "fa-brands fa-reddit-alien",  href: "https://www.reddit.com/u/mubin25s/s/HFGmFrHUkV",       color: "#ff4500" },
+                                    { icon: "fa-brands fa-whatsapp",      href: "https://wa.me/8801302910017",                          color: "#25d366" },
+                                    { icon: "fa-brands fa-instagram",     href: "https://www.instagram.com/fathum.mubin.26",             color: "#e4405f" },
+                                    { icon: "fa-brands fa-facebook-f",    href: "https://www.facebook.com/share/14RTXWtMn8Y/",          color: "#1877f2" },
+                                ].map((s, i) => (
+                                    <motion.a
+                                        key={i}
+                                        href={s.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: i * 0.06 }}
+                                        whileHover={{ y: -6, scale: 1.2, color: s.color, transition: { type: 'spring', stiffness: 600, damping: 20, mass: 0.5 } }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="w-8 h-8 flex items-center justify-center text-slate-400"
+                                    >
+                                        <i
+                                            className={`${s.icon} text-xl`}
+                                            style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.1))', transition: 'filter 80ms ease' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 12px ${s.color}) brightness(1.5)`}
+                                            onMouseLeave={(e) => e.currentTarget.style.filter = `drop-shadow(0 0 2px rgba(255,255,255,0.1))`}
+                                        />
+                                    </motion.a>
+                                ))}
                             </div>
                         </div>
                     </motion.div>
