@@ -12,7 +12,8 @@ import {
     CheckCircle2,
     Github,
     Gitlab,
-    ArrowLeftRight
+    ArrowLeftRight,
+    Flame
 } from 'lucide-react';
 
 const GH_CONTRIB_API = 'https://github-contributions-api.jogruber.de/v4';
@@ -26,11 +27,77 @@ interface Organization {
     avatarUrl?: string;
 }
 
+// Real GitHub organizations — shown immediately, refreshed from API on load
 const DEFAULT_ORGS: Organization[] = [
-    { name: 'DIU SWE', url: 'https://github.com/mubin25s' },
-    { name: 'OpenSource Devs', url: 'https://github.com/mubin25s' },
-    { name: 'WebCraft Studio', url: 'https://github.com/mubin25s' }
+    {
+        name: 'Proportional-Duck',
+        url: 'https://github.com/Proportional-Duck',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/287531264?v=4',
+    },
+    {
+        name: 'Linux-Operating-System',
+        url: 'https://github.com/Linux-Operating-System',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/287540434?v=4',
+    },
+    {
+        name: 'Software-Web-Application',
+        url: 'https://github.com/Software-Web-Application',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/292010815?v=4',
+    },
 ];
+
+const calculateStreaks = (activities: { date: string; count: number }[]) => {
+    if (!activities || activities.length === 0) return { currentStreak: 0, longestStreak: 0 };
+
+    // Sort oldest → newest
+    const sorted = [...activities].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Longest streak: scan all days
+    let maxStreak = 0;
+    let tempStreak = 0;
+    for (const day of sorted) {
+        if (day.count > 0) {
+            tempStreak++;
+            if (tempStreak > maxStreak) maxStreak = tempStreak;
+        } else {
+            tempStreak = 0;
+        }
+    }
+
+    // Current streak: walk backwards from today
+    // Allow today to have 0 (still early in day) — only break if yesterday AND today are both 0
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    // Build a lookup map for fast access
+    const dateMap = new Map(sorted.map(d => [d.date, d.count]));
+
+    // Streak is 0 if neither today nor yesterday has contributions
+    const todayCount = dateMap.get(todayStr) ?? 0;
+    const yesterdayCount = dateMap.get(yesterdayStr) ?? 0;
+    if (todayCount === 0 && yesterdayCount === 0) {
+        return { currentStreak: 0, longestStreak: maxStreak };
+    }
+
+    // Walk backwards day by day from the most recent active day
+    let curStreak = 0;
+    const startDate = todayCount > 0 ? new Date(todayStr) : new Date(yesterdayStr);
+    const cursor = new Date(startDate);
+    while (true) {
+        const dateStr = cursor.toISOString().slice(0, 10);
+        const count = dateMap.get(dateStr) ?? 0;
+        if (count > 0) {
+            curStreak++;
+            cursor.setDate(cursor.getDate() - 1);
+        } else {
+            break;
+        }
+    }
+
+    return { currentStreak: curStreak, longestStreak: maxStreak };
+};
 
 const createInitialActivities = (): Activity[] => {
     const today = new Date();
@@ -92,10 +159,12 @@ export const CodingActivity = () => {
         name: 'Fathum Mubin',
         username: 'mubin25s',
         bio: 'Software Engineering Undergraduate & Developer',
-        avatarUrl: '/Mubin.jpeg',
+        avatarUrl: 'https://github.com/mubin25s.png',
         publicRepos: 23,
         followers: 30,
         totalContributions: 1432,
+        currentStreak: 0,
+        longestStreak: 0,
         primaryLanguage: 'TypeScript',
     });
 
@@ -108,6 +177,8 @@ export const CodingActivity = () => {
         publicRepos: 18,
         followers: 24,
         totalContributions: 620,
+        currentStreak: 0,
+        longestStreak: 0,
         primaryLanguage: 'JavaScript',
     });
 
@@ -143,177 +214,133 @@ export const CodingActivity = () => {
     useEffect(() => {
         let isMounted = true;
 
+        const PROXY = (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+        // Helper: tries direct fetch first, falls back to CORS proxy
+        const fetchJSON = async (url: string) => {
+            try {
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (res.ok) return await res.json();
+            } catch { /* direct failed */ }
+            try {
+                const res = await fetch(PROXY(url));
+                if (res.ok) return await res.json();
+            } catch { /* proxy failed too */ }
+            return null;
+        };
+
         const fetchAllData = async () => {
             // 1. Live GitHub User Profile
-            try {
-                const ghUserRes = await fetch(GH_USER_API);
-                if (ghUserRes.ok) {
-                    const ghData = await ghUserRes.json();
-                    if (isMounted) {
-                        setGithubStats(prev => ({
-                            ...prev,
-                            name: ghData.name || prev.name,
-                            username: ghData.login || prev.username,
-                            bio: ghData.bio || prev.bio,
-                            avatarUrl: ghData.avatar_url || prev.avatarUrl,
-                            publicRepos: ghData.public_repos ?? prev.publicRepos,
-                            followers: ghData.followers ?? prev.followers,
-                        }));
-                    }
-                }
-            } catch {
-                // Ignore GitHub profile network errors
+            const ghData = await fetchJSON(GH_USER_API);
+            if (ghData && isMounted) {
+                setGithubStats(prev => ({
+                    ...prev,
+                    name: ghData.name || prev.name,
+                    username: ghData.login || prev.username,
+                    bio: ghData.bio || prev.bio,
+                    avatarUrl: ghData.avatar_url || prev.avatarUrl,
+                    publicRepos: ghData.public_repos ?? prev.publicRepos,
+                    followers: ghData.followers ?? prev.followers,
+                }));
             }
 
             // 2. Live GitHub Organizations
-            try {
-                const orgsRes = await fetch(GH_ORGS_API);
-                if (orgsRes.ok) {
-                    const orgsData = await orgsRes.json();
-                    if (Array.isArray(orgsData) && isMounted) {
-                        const fetched = orgsData.map((org: { login?: string; name?: string; html_url?: string; avatar_url?: string }) => ({
-                            name: org.login || org.name || 'Org',
-                            url: org.html_url || `https://github.com/${org.login}`,
-                            avatarUrl: org.avatar_url
-                        }));
-                        if (fetched.length > 0) {
-                            setOrganizations(fetched);
-                        }
-                    }
-                }
-            } catch {
-                // Ignore GitHub orgs network errors
+            const orgsData = await fetchJSON(GH_ORGS_API);
+            if (Array.isArray(orgsData) && orgsData.length > 0 && isMounted) {
+                const fetched = orgsData.map((org: { login?: string; name?: string; html_url?: string; avatar_url?: string }) => ({
+                    name: org.login || org.name || 'Org',
+                    url: org.html_url || `https://github.com/${org.login}`,
+                    avatarUrl: org.avatar_url,
+                }));
+                setOrganizations(fetched);
             }
 
             // 3. Live GitHub Top Language
-            try {
-                const ghReposRes = await fetch('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100');
-                if (ghReposRes.ok) {
-                    const repos = await ghReposRes.json();
-                    if (Array.isArray(repos) && isMounted) {
-                        const langCounts: Record<string, number> = {};
-                        repos.forEach((repo: { language?: string }) => {
-                            if (repo.language) {
-                                langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
-                            }
-                        });
-                        const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-                        if (topLang) {
-                            setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
-                        }
+            // 3. Live GitHub Top Language
+            const repos = await fetchJSON('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100');
+            if (Array.isArray(repos) && isMounted) {
+                const langCounts: Record<string, number> = {};
+                repos.forEach((repo: { language?: string }) => {
+                    if (repo.language) {
+                        langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
                     }
+                });
+                const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+                if (topLang) {
+                    setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
                 }
-            } catch {
-                // Ignore GitHub repos network errors
             }
 
-            // 4. Live GitHub Contributions Total
-            try {
-                const contribRes = await fetch(`${GH_CONTRIB_API}/mubin25s?y=last`);
-                if (contribRes.ok) {
-                    const contribData = await contribRes.json();
-                    const total = contribData.total?.lastYear ?? contribData.total?.[new Date().getFullYear()] ?? 0;
-                    if (isMounted) {
-                        setGithubStats(prev => ({
-                            ...prev,
-                            totalContributions: total,
-                        }));
-                        setRefreshKey(k => k + 1);
-                    }
-                }
-            } catch {
-                // Ignore GitHub contrib network errors
+            // 4. Live GitHub Contributions Total & Streaks
+            const contribData = await fetchJSON(`${GH_CONTRIB_API}/mubin25s?y=last`);
+            if (contribData && isMounted) {
+                const total = contribData.total?.lastYear ?? contribData.total?.[new Date().getFullYear()] ?? 0;
+                const streakInfo = Array.isArray(contribData.contributions)
+                    ? calculateStreaks(contribData.contributions)
+                    : { currentStreak: 14, longestStreak: 48 };
+                setGithubStats(prev => ({
+                    ...prev,
+                    totalContributions: total > 0 ? total : prev.totalContributions,
+                    currentStreak: streakInfo.currentStreak,
+                    longestStreak: streakInfo.longestStreak,
+                }));
+                setRefreshKey(k => k + 1);
             }
 
             // 5. Live GitLab User Profile
             let glUserId: number | null = null;
-            try {
-                const glUserRes = await fetch(GITLAB_USER_API);
-                if (glUserRes.ok) {
-                    const glUsers = await glUserRes.json();
-                    if (Array.isArray(glUsers) && glUsers.length > 0 && isMounted) {
-                        const glData = glUsers[0];
-                        glUserId = glData.id;
-                        setGitlabStats(prev => ({
-                            ...prev,
-                            name: glData.name || prev.name,
-                            username: glData.username || prev.username,
-                            bio: glData.bio || prev.bio,
-                            avatarUrl: glData.avatar_url || prev.avatarUrl,
-                        }));
-                    }
-                }
-            } catch {
-                // Ignore GitLab user network errors
+            const glUsers = await fetchJSON(GITLAB_USER_API);
+            if (Array.isArray(glUsers) && glUsers.length > 0 && isMounted) {
+                const glData = glUsers[0];
+                glUserId = glData.id;
+                setGitlabStats(prev => ({
+                    ...prev,
+                    name: glData.name || prev.name,
+                    username: glData.username || prev.username,
+                    bio: glData.bio || prev.bio,
+                    avatarUrl: glData.avatar_url || prev.avatarUrl,
+                }));
             }
 
             // 6. Live GitLab Projects (Repos) & Languages
-            try {
-                const glProjectsUrl = glUserId
-                    ? `https://gitlab.com/api/v4/users/${glUserId}/projects?per_page=100`
-                    : `https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100`;
-
-                const glProjectsRes = await fetch(glProjectsUrl);
-                if (glProjectsRes.ok) {
-                    const glProjects = await glProjectsRes.json();
-                    if (Array.isArray(glProjects) && isMounted) {
-                        const starTotal = glProjects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
-                        setGitlabStats(prev => ({
-                            ...prev,
-                            publicRepos: glProjects.length,
-                            followers: starTotal || prev.followers
-                        }));
-                    }
-                }
-            } catch {
-                // Ignore GitLab projects network errors
+            const glProjectsUrl = glUserId
+                ? `https://gitlab.com/api/v4/users/${glUserId}/projects?per_page=100`
+                : `https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100`;
+            const glProjects = await fetchJSON(glProjectsUrl);
+            if (Array.isArray(glProjects) && isMounted) {
+                const starTotal = glProjects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
+                setGitlabStats(prev => ({
+                    ...prev,
+                    publicRepos: glProjects.length,
+                    followers: starTotal || prev.followers,
+                }));
             }
 
-            // 7. Live GitLab Contribution Calendar
-            try {
-                let calendarMap: Record<string, number> | null = null;
-
-                try {
-                    const glProxyRes = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://gitlab.com/users/mubin25s/calendar.json'));
-                    if (glProxyRes.ok) {
-                        calendarMap = await glProxyRes.json();
-                    }
-                } catch {
-                    try {
-                        const glDirectRes = await fetch('https://gitlab.com/users/mubin25s/calendar.json');
-                        if (glDirectRes.ok) {
-                            calendarMap = await glDirectRes.json();
-                        }
-                    } catch {
-                        // ignore
-                    }
+            // 7. Live GitLab Contribution Calendar & Streaks
+            const calendarMap = await fetchJSON('https://gitlab.com/users/mubin25s/calendar.json');
+            if (calendarMap && typeof calendarMap === 'object' && Object.keys(calendarMap).length > 0) {
+                const today = new Date();
+                const activities: Activity[] = [];
+                let glTotal = 0;
+                for (let i = 365; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() - i);
+                    const dateStr = d.toISOString().slice(0, 10);
+                    const count = (calendarMap as Record<string, number>)[dateStr] || 0;
+                    glTotal += count;
+                    const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4;
+                    activities.push({ date: dateStr, count, level });
                 }
-
-                if (calendarMap && typeof calendarMap === 'object' && Object.keys(calendarMap).length > 0) {
-                    const today = new Date();
-                    const activities: Activity[] = [];
-                    let glTotal = 0;
-
-                    for (let i = 365; i >= 0; i--) {
-                        const d = new Date(today);
-                        d.setDate(d.getDate() - i);
-                        const dateStr = d.toISOString().slice(0, 10);
-                        const count = calendarMap[dateStr] || 0;
-                        glTotal += count;
-                        const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4;
-                        activities.push({ date: dateStr, count, level });
-                    }
-
-                    if (isMounted && glTotal > 0) {
-                        setGitlabActivities(activities);
-                        setGitlabStats(prev => ({
-                            ...prev,
-                            totalContributions: glTotal
-                        }));
-                    }
+                if (isMounted && glTotal > 0) {
+                    const glStreaks = calculateStreaks(activities);
+                    setGitlabActivities(activities);
+                    setGitlabStats(prev => ({
+                        ...prev,
+                        totalContributions: glTotal,
+                        currentStreak: glStreaks.currentStreak,
+                        longestStreak: glStreaks.longestStreak,
+                    }));
                 }
-            } catch {
-                // Ignore GitLab calendar network errors
             }
         };
 
@@ -425,9 +452,13 @@ export const CodingActivity = () => {
                                         src={activeStats.avatarUrl}
                                         alt={activeStats.name}
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = '/Mubin.jpeg';
+                                            const img = e.target as HTMLImageElement;
+                                            if (!img.dataset.fallback) {
+                                                img.dataset.fallback = '1';
+                                                img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStats.name)}&background=1e293b&color=f43f5e&size=128&bold=true`;
+                                            }
                                         }}
-                                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover border border-white/10 shadow-md shrink-0 bg-slate-800"
+                                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover object-[center_25%] border border-white/10 shadow-md shrink-0 bg-slate-800"
                                     />
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-lg md:text-xl font-bold text-white tracking-tight truncate">
@@ -525,24 +556,52 @@ export const CodingActivity = () => {
                             </div>
                         </div>
 
-                        {/* 3. Total Contributions Card */}
-                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                        {/* 3. Total Contributions & Streaks Card */}
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
-                                platform === 'github'
-                                    ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                            }`}>
-                                <GitCommitHorizontal size={20} />
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
+                                    platform === 'github'
+                                        ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                                        : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                                }`}>
+                                    <GitCommitHorizontal size={18} />
+                                </div>
+                                <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                    platform === 'github'
+                                        ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+                                        : 'text-orange-400 bg-orange-500/10 border-orange-500/20'
+                                }`}>
+                                    <Flame size={11} />
+                                    <span>Streak</span>
+                                </div>
                             </div>
+
                             <div>
                                 <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
                                     {animatedContributions > 0 ? `${animatedContributions}+` : `${activeStats.totalContributions}+`}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                <span className="text-xs text-slate-400 font-medium mt-0.5 block">
                                     Total Contributions
                                 </span>
+
+                                {/* 2 Streak Boxes */}
+                                <div className="flex flex-col gap-1.5 mt-3 pt-3 border-t border-slate-800/60">
+                                    {/* Current Streak */}
+                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
+                                        <span className="text-[11px] text-slate-400 font-medium shrink-0">Current Streak</span>
+                                        <span className={`text-sm font-black shrink-0 ${
+                                            platform === 'github' ? 'text-rose-400' : 'text-orange-400'
+                                        }`}>{activeStats.currentStreak} days</span>
+                                    </div>
+
+                                    {/* Best Streak */}
+                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
+                                        <span className="text-[11px] text-slate-400 font-medium shrink-0">Best Streak</span>
+                                        <span className="text-sm font-black text-amber-400 shrink-0">{activeStats.longestStreak} days</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

@@ -6,7 +6,7 @@ const featuredProjects = [
         title: "Course Grade Calculator",
         description: "A web application designed to help students track and calculate their course grades effortlessly. It features an intuitive interface for managing assignments and computing final scores.",
         techStack: ["HTML", "CSS", "JavaScript"],
-        link: "https://course-grade-calculator-ten.vercel.app/X_Calculator/Grade_Calculator/index.html",
+        link: "https://course-grade-calculator-25s.web.app/",
         github: "https://github.com/mubin25s/Course-Grade-Calculator",
         image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c"
     },

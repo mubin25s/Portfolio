@@ -148,7 +148,7 @@ export const Hero = () => {
                         <img
                             src="/Mubin.jpeg"
                             alt="Mubin Sachcha"
-                            className="w-full h-full object-cover rounded-full border-4 border-white/10 hover:border-primary/50 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)] relative z-10"
+                            className="w-full h-full object-cover object-[center_25%] rounded-full border-4 border-white/10 hover:border-primary/50 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)] relative z-10"
                         />
                         <div className="absolute -inset-4 border border-white/5 rounded-full animate-[spin_30s_linear_infinite]"></div>
                         <div className="absolute -inset-8 border border-white/5 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
