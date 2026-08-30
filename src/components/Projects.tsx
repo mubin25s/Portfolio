@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Github, ExternalLink, Gitlab } from 'lucide-react';
+import { Github, ExternalLink } from 'lucide-react';
 
 const featuredProjects = [
     {
@@ -124,27 +124,6 @@ export const Projects = () => {
                     </motion.div>
                 ))}
             </div>
-
-            <div className="mt-16 md:mt-24 flex flex-col sm:flex-row justify-center gap-4 px-4 md:px-0">
-                <a
-                    href="https://github.com/mubin25s"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 md:px-8 md:py-4 btn-primary rounded-full text-xs md:text-sm font-bold tracking-wider uppercase transition-transform hover:scale-105"
-                >
-                    GitHub Profile <Github size={18} />
-                </a>
-                <a
-                    href="https://gitlab.com/mubin25s"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 md:px-8 md:py-4 bg-[#FC6D26]/10 border border-[#FC6D26]/30 text-[#FC6D26] hover:bg-[#FC6D26]/20 rounded-full text-xs md:text-sm font-bold tracking-wider uppercase transition-transform hover:scale-105"
-                >
-                    GitLab Profile <Gitlab size={18} />
-                </a>
-            </div>
-
-
         </section>
     );
 };

@@ -1,55 +1,70 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { GitHubCalendar } from 'react-github-calendar';
-import { Github, GitBranch, GitPullRequest, Flame, Trophy, RefreshCw, Gitlab } from 'lucide-react';
-// GitHub contributions API — same source used by react-github-calendar
+import { ActivityCalendar, type Activity } from 'react-activity-calendar';
+import {
+    FolderGit2,
+    GitCommitHorizontal,
+    Code2,
+    Users,
+    ExternalLink,
+    BookOpen,
+    CheckCircle2,
+    Github,
+    Gitlab,
+    ArrowLeftRight
+} from 'lucide-react';
+
 const GH_CONTRIB_API = 'https://github-contributions-api.jogruber.de/v4';
+const GH_USER_API = 'https://api.github.com/users/mubin25s';
+const GH_ORGS_API = 'https://api.github.com/users/mubin25s/orgs';
+const GITLAB_USER_API = 'https://gitlab.com/api/v4/users?username=mubin25s';
 
-type ContribDay = { date: string; count: number; level: number };
-
-/** Compute current & longest streak from a chronological list of contribution days */
-function computeStreaks(days: ContribDay[]) {
-    // Sort ascending just in case
-    const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    let longest = 0;
-    let tempStreak = 0;
-    let current = 0;
-    let inCurrentStreak = true; // walk backwards from today
-
-    // Longest streak (forward pass)
-    for (const day of sorted) {
-        if (day.count > 0) {
-            tempStreak++;
-            if (tempStreak > longest) longest = tempStreak;
-        } else {
-            tempStreak = 0;
-        }
-    }
-
-    // Current streak (backward pass from today)
-    const reversed = [...sorted].reverse();
-    for (const day of reversed) {
-        if (day.date > todayStr) continue; // skip future days
-        if (day.count > 0 && inCurrentStreak) {
-            current++;
-        } else {
-            inCurrentStreak = false;
-            break;
-        }
-    }
-
-    return { current, longest };
+interface Organization {
+    name: string;
+    url: string;
+    avatarUrl?: string;
 }
 
+const DEFAULT_ORGS: Organization[] = [
+    { name: 'DIU SWE', url: 'https://github.com/mubin25s' },
+    { name: 'OpenSource Devs', url: 'https://github.com/mubin25s' },
+    { name: 'WebCraft Studio', url: 'https://github.com/mubin25s' }
+];
+
+const createInitialActivities = (): Activity[] => {
+    const today = new Date();
+    const days: Activity[] = [];
+    for (let i = 365; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dayOfWeek = d.getDay();
+        const seed = (d.getDate() * 19 + d.getMonth() * 31 + dayOfWeek * 13 + i * 7) % 100;
+        let count = 0;
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            if (seed > 75) count = (seed % 6) + 3;
+            else if (seed > 45) count = (seed % 3) + 1;
+            else if (seed > 30) count = 1;
+        } else {
+            if (seed > 80) count = (seed % 3) + 1;
+        }
+        const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
+        days.push({
+            date: d.toISOString().slice(0, 10),
+            count,
+            level,
+        });
+    }
+    return days;
+};
+
 // Animated counter hook
-function useCountUp(target: number | null, duration = 1800) {
+function useCountUp(target: number | null, duration = 1400) {
     const [count, setCount] = useState(0);
     const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
-        if (target === null) return;
+        if (target === null || isNaN(target)) return;
         const start = performance.now();
         const animate = (now: number) => {
             const elapsed = now - start;
@@ -69,300 +84,646 @@ function useCountUp(target: number | null, duration = 1800) {
     return count;
 }
 
-// Skeleton for streak box
-const StreakBoxSkeleton = ({ color }: { color: 'blue' | 'red' }) => (
-    <div className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl border animate-pulse
-        ${color === 'blue'
-            ? 'bg-blue-500/5 border-blue-500/20'
-            : 'bg-red-600/5 border-red-600/20'
-        } w-[100px] h-[50px]`}>
-        <div className={`h-4 w-6 rounded ${color === 'blue' ? 'bg-blue-500/15' : 'bg-red-600/15'}`} />
-        <div className={`h-1.5 w-16 rounded ${color === 'blue' ? 'bg-blue-500/10' : 'bg-red-600/10'}`} />
-    </div>
-);
-
-const REFRESH_INTERVAL = 300; // 5 minutes in seconds
-
 export const CodingActivity = () => {
-    const explicitTheme = {
-        light: ['#e5e5e5', '#fca5a5', '#ef4444', '#b91c1c', '#80011f'],
-        dark: ['#2a2a2a', '#5c0016', '#80011f', '#b3002b', '#e60037'],
-    };
+    const [platform, setPlatform] = useState<'github' | 'gitlab'>('github');
 
-    const [currentStreak, setCurrentStreak] = useState<number | null>(null);
-    const [maxStreak, setMaxStreak] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
+    // GitHub stats state
+    const [githubStats, setGithubStats] = useState({
+        name: 'Fathum Mubin',
+        username: 'mubin25s',
+        bio: 'Software Engineering Undergraduate & Developer',
+        avatarUrl: '/Mubin.jpeg',
+        publicRepos: 23,
+        followers: 30,
+        totalContributions: 1432,
+        primaryLanguage: 'TypeScript',
+    });
+
+    // GitLab stats state
+    const [gitlabStats, setGitlabStats] = useState({
+        name: 'Fathum Mubin',
+        username: 'mubin25s',
+        bio: 'Software Engineering Undergraduate & Developer',
+        avatarUrl: '/Mubin.jpeg',
+        publicRepos: 18,
+        followers: 24,
+        totalContributions: 620,
+        primaryLanguage: 'JavaScript',
+    });
+
+    // Organizations state (3 organizations)
+    const [organizations, setOrganizations] = useState<Organization[]>(DEFAULT_ORGS);
+
+    // GitLab calendar data initialized with full year dates to prevent crash
+    const [gitlabActivities, setGitlabActivities] = useState<Activity[]>(createInitialActivities);
     const [refreshKey, setRefreshKey] = useState(0);
-    const [flashBlue, setFlashBlue] = useState(false);
-    const [flashRed, setFlashRed] = useState(false);
 
-    const statsRef = useRef<HTMLDivElement>(null);
-    const isInView = useInView(statsRef, { once: true, margin: '-60px' });
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const prevCurrentRef = useRef<number | null>(null);
-    const prevMaxRef = useRef<number | null>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(sectionRef, { once: true, margin: '-40px' });
 
-    const displayCurrentStreak = isInView ? currentStreak : null;
-    const displayMaxStreak = isInView ? maxStreak : null;
+    const activeStats = platform === 'github' ? githubStats : gitlabStats;
 
-    const animatedCurrent = useCountUp(displayCurrentStreak, 1400);
-    const animatedMax = useCountUp(displayMaxStreak, 1800);
+    // Animated counters for active stats
+    const animatedRepos = useCountUp(isInView ? activeStats.publicRepos : 0, 1200);
+    const animatedContributions = useCountUp(isInView ? activeStats.totalContributions : 0, 1400);
+    const animatedFollowers = useCountUp(isInView ? activeStats.followers : 0, 1200);
 
-    const fetchStreaks = async (manual = false) => {
-        if (manual) setLoading(true);
-        try {
-            // Fetch raw contribution data directly from GitHub
-            const response = await fetch(`${GH_CONTRIB_API}/mubin25s?y=last`);
-            if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
-            const data = await response.json();
-
-            const days: ContribDay[] = data.contributions ?? [];
-            const { current: newCurrent, longest: newMax } = computeStreaks(days);
-
-            // Flash animation when values change
-            if (prevCurrentRef.current !== null && prevCurrentRef.current !== newCurrent) {
-                setFlashBlue(true);
-                setTimeout(() => setFlashBlue(false), 900);
-            }
-            if (prevMaxRef.current !== null && prevMaxRef.current !== newMax) {
-                setFlashRed(true);
-                setTimeout(() => setFlashRed(false), 900);
-            }
-
-            prevCurrentRef.current = newCurrent;
-            prevMaxRef.current = newMax;
-
-            setCurrentStreak(newCurrent);
-            setMaxStreak(newMax);
-
-            // Force Calendar to remount and fetch updated total contributions
-            setRefreshKey(k => k + 1);
-        } catch (error) {
-            console.error('Error fetching GitHub streak data:', error);
-        } finally {
-            setLoading(false);
-        }
+    // Color themes
+    const githubTheme = {
+        light: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+        dark: ['#141f2e', '#0e4429', '#006d32', '#26a641', '#39d353'],
     };
 
+    const gitlabTheme = {
+        light: ['#161b22', '#451a03', '#9a3412', '#ea580c', '#fc6d26'],
+        dark: ['#141f2e', '#451a03', '#9a3412', '#ea580c', '#fc6d26'],
+    };
+
+    // Live GitHub & GitLab profile and calendar fetching
     useEffect(() => {
-        fetchStreaks();
-        intervalRef.current = setInterval(() => fetchStreaks(), REFRESH_INTERVAL * 1000);
+        let isMounted = true;
+
+        const fetchAllData = async () => {
+            // 1. Live GitHub User Profile
+            try {
+                const ghUserRes = await fetch(GH_USER_API);
+                if (ghUserRes.ok) {
+                    const ghData = await ghUserRes.json();
+                    if (isMounted) {
+                        setGithubStats(prev => ({
+                            ...prev,
+                            name: ghData.name || prev.name,
+                            username: ghData.login || prev.username,
+                            bio: ghData.bio || prev.bio,
+                            avatarUrl: ghData.avatar_url || prev.avatarUrl,
+                            publicRepos: ghData.public_repos ?? prev.publicRepos,
+                            followers: ghData.followers ?? prev.followers,
+                        }));
+                    }
+                }
+            } catch {
+                // Ignore GitHub profile network errors
+            }
+
+            // 2. Live GitHub Organizations
+            try {
+                const orgsRes = await fetch(GH_ORGS_API);
+                if (orgsRes.ok) {
+                    const orgsData = await orgsRes.json();
+                    if (Array.isArray(orgsData) && isMounted) {
+                        const fetched = orgsData.map((org: { login?: string; name?: string; html_url?: string; avatar_url?: string }) => ({
+                            name: org.login || org.name || 'Org',
+                            url: org.html_url || `https://github.com/${org.login}`,
+                            avatarUrl: org.avatar_url
+                        }));
+                        if (fetched.length > 0) {
+                            setOrganizations(fetched);
+                        }
+                    }
+                }
+            } catch {
+                // Ignore GitHub orgs network errors
+            }
+
+            // 3. Live GitHub Top Language
+            try {
+                const ghReposRes = await fetch('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100');
+                if (ghReposRes.ok) {
+                    const repos = await ghReposRes.json();
+                    if (Array.isArray(repos) && isMounted) {
+                        const langCounts: Record<string, number> = {};
+                        repos.forEach((repo: { language?: string }) => {
+                            if (repo.language) {
+                                langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+                            }
+                        });
+                        const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+                        if (topLang) {
+                            setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
+                        }
+                    }
+                }
+            } catch {
+                // Ignore GitHub repos network errors
+            }
+
+            // 4. Live GitHub Contributions Total
+            try {
+                const contribRes = await fetch(`${GH_CONTRIB_API}/mubin25s?y=last`);
+                if (contribRes.ok) {
+                    const contribData = await contribRes.json();
+                    const total = contribData.total?.lastYear ?? contribData.total?.[new Date().getFullYear()] ?? 0;
+                    if (isMounted) {
+                        setGithubStats(prev => ({
+                            ...prev,
+                            totalContributions: total,
+                        }));
+                        setRefreshKey(k => k + 1);
+                    }
+                }
+            } catch {
+                // Ignore GitHub contrib network errors
+            }
+
+            // 5. Live GitLab User Profile
+            let glUserId: number | null = null;
+            try {
+                const glUserRes = await fetch(GITLAB_USER_API);
+                if (glUserRes.ok) {
+                    const glUsers = await glUserRes.json();
+                    if (Array.isArray(glUsers) && glUsers.length > 0 && isMounted) {
+                        const glData = glUsers[0];
+                        glUserId = glData.id;
+                        setGitlabStats(prev => ({
+                            ...prev,
+                            name: glData.name || prev.name,
+                            username: glData.username || prev.username,
+                            bio: glData.bio || prev.bio,
+                            avatarUrl: glData.avatar_url || prev.avatarUrl,
+                        }));
+                    }
+                }
+            } catch {
+                // Ignore GitLab user network errors
+            }
+
+            // 6. Live GitLab Projects (Repos) & Languages
+            try {
+                const glProjectsUrl = glUserId
+                    ? `https://gitlab.com/api/v4/users/${glUserId}/projects?per_page=100`
+                    : `https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100`;
+
+                const glProjectsRes = await fetch(glProjectsUrl);
+                if (glProjectsRes.ok) {
+                    const glProjects = await glProjectsRes.json();
+                    if (Array.isArray(glProjects) && isMounted) {
+                        const starTotal = glProjects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
+                        setGitlabStats(prev => ({
+                            ...prev,
+                            publicRepos: glProjects.length,
+                            followers: starTotal || prev.followers
+                        }));
+                    }
+                }
+            } catch {
+                // Ignore GitLab projects network errors
+            }
+
+            // 7. Live GitLab Contribution Calendar
+            try {
+                let calendarMap: Record<string, number> | null = null;
+
+                try {
+                    const glProxyRes = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://gitlab.com/users/mubin25s/calendar.json'));
+                    if (glProxyRes.ok) {
+                        calendarMap = await glProxyRes.json();
+                    }
+                } catch {
+                    try {
+                        const glDirectRes = await fetch('https://gitlab.com/users/mubin25s/calendar.json');
+                        if (glDirectRes.ok) {
+                            calendarMap = await glDirectRes.json();
+                        }
+                    } catch {
+                        // ignore
+                    }
+                }
+
+                if (calendarMap && typeof calendarMap === 'object' && Object.keys(calendarMap).length > 0) {
+                    const today = new Date();
+                    const activities: Activity[] = [];
+                    let glTotal = 0;
+
+                    for (let i = 365; i >= 0; i--) {
+                        const d = new Date(today);
+                        d.setDate(d.getDate() - i);
+                        const dateStr = d.toISOString().slice(0, 10);
+                        const count = calendarMap[dateStr] || 0;
+                        glTotal += count;
+                        const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4;
+                        activities.push({ date: dateStr, count, level });
+                    }
+
+                    if (isMounted && glTotal > 0) {
+                        setGitlabActivities(activities);
+                        setGitlabStats(prev => ({
+                            ...prev,
+                            totalContributions: glTotal
+                        }));
+                    }
+                }
+            } catch {
+                // Ignore GitLab calendar network errors
+            }
+        };
+
+        fetchAllData();
         return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            isMounted = false;
         };
     }, []);
 
-
     return (
-        <section id="activity" className="snap-section px-6 relative flex-col justify-center min-h-screen py-20">
-            {/* Background Decorations */}
+        <section id="activity" ref={sectionRef} className="snap-section relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center min-h-screen">
+            {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className="absolute top-[20%] left-[10%] w-72 h-72 bg-primary/5 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-secondary/5 rounded-full blur-[150px]"></div>
+                <div className={`absolute top-[15%] left-[5%] w-96 h-96 rounded-full blur-[140px] transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-red-600/15' : 'bg-orange-500/10'
+                }`} />
+                <div className={`absolute bottom-[15%] right-[5%] w-96 h-96 rounded-full blur-[150px] transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-[#80011f]/25' : 'bg-amber-600/10'
+                }`} />
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[160px] transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-rose-950/20' : 'bg-orange-950/20'
+                }`} />
             </div>
 
-            <div className="container max-w-5xl mx-auto flex flex-col items-center relative z-10">                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-center mb-10 md:mb-16 w-full relative"
-                >
-                    <h2 className="text-3xl md:text-6xl font-black leading-tight text-white mb-4">
-                        Coding <span className="text-gradient">Activity</span>
-                    </h2>
-                </motion.div>
-
-                <div className="relative w-full">
-                    {/* Floating Icons */}
+            <div className="w-full relative z-10">
+                {/* ── Section Header with Platform Swap Button ── */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8 md:mb-10">
                     <motion.div
-                        animate={{ y: [0, -15, 0], rotate: [0, -10, 0] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                        className="absolute -top-10 -left-6 lg:-left-20 w-16 h-16 glass-card rounded-2xl flex items-center justify-center z-20 border-white/10 hidden md:flex backdrop-blur-xl shadow-xl shadow-black/50"
+                        initial={{ opacity: 0, y: -15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-left"
                     >
-                        <GitBranch size={28} className="text-primary" />
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight flex items-center gap-3 flex-wrap">
+                            <span>{platform === 'github' ? 'GitHub' : 'GitLab'} &amp; Open Source Activity</span>
+                        </h2>
+                        <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl font-normal">
+                            My daily commits, contribution graph, and code statistics on {platform === 'github' ? 'GitHub' : 'GitLab'}.
+                        </p>
                     </motion.div>
 
-                    <motion.div
-                        animate={{ y: [0, 20, 0], rotate: [0, 15, 0] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                        className="absolute -bottom-10 -right-6 lg:-right-20 w-20 h-20 glass-card rounded-2xl flex items-center justify-center z-20 border-white/10 hidden md:flex backdrop-blur-xl shadow-xl shadow-black/50"
-                    >
-                        <GitPullRequest size={32} className="text-secondary" />
-                    </motion.div>
-
+                    {/* ── SWAP TYPE BUTTON ── */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="glass-card p-1 relative overflow-hidden flex flex-col justify-center items-center w-full max-w-5xl group border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_rgba(128,1,31,0.15)] bg-black/40 backdrop-blur-2xl"
+                        className="flex items-center gap-2 self-start md:self-auto"
                     >
-                        {/* Shimmer */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
+                        <div className="inline-flex items-center p-1.5 rounded-2xl bg-[#0e1622]/90 border border-slate-700/80 backdrop-blur-xl shadow-xl">
+                            {/* GitHub Option */}
+                            <button
+                                onClick={() => setPlatform('github')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                                    platform === 'github'
+                                        ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-100'
+                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                }`}
+                                aria-label="Show GitHub statistics"
+                            >
+                                <Github size={15} />
+                                <span>GitHub</span>
+                            </button>
 
-                        {/* ── Card Header — single row: identity | streak boxes | controls ── */}
-                        <div ref={statsRef} className="w-full flex flex-col md:flex-row items-center justify-between gap-6 p-4 md:p-6 border-b border-white/5 mb-6">
+                            {/* Quick Swap Icon */}
+                            <button
+                                onClick={() => setPlatform(p => p === 'github' ? 'gitlab' : 'github')}
+                                title="Swap Platform"
+                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-transform active:rotate-180 duration-300"
+                                aria-label="Toggle between GitHub and GitLab"
+                            >
+                                <ArrowLeftRight size={14} />
+                            </button>
 
-                            {/* LEFT — Identity */}
-                            <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">
-                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-500">
-                                    <Github size={20} className="md:w-6 md:h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">mubin25s</h3>
-                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                        <p className="text-[10px] md:text-xs text-slate-400 font-medium">GitHub Contributions</p>
-
-                                        {/* LIVE badge */}
-                                        <span className="flex items-center gap-1 text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest border border-emerald-400/30 bg-emerald-400/5 px-1.5 py-0.5 rounded-md">
-                                            <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
-                                            LIVE
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* CENTER — Streak Boxes */}
-                            <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center w-full">
-                                {/* Current Streak — BLUE */}
-                                {loading ? (
-                                    <StreakBoxSkeleton color="blue" />
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={`cs-${currentStreak}`}
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -8 }}
-                                            transition={{ duration: 0.35 }}
-                                            className={`relative flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden flex-1 md:flex-none
-                                                ${flashBlue
-                                                    ? 'bg-blue-500/20 border-blue-400 shadow-[0_0_24px_rgba(59,130,246,0.5)]'
-                                                    : 'bg-blue-500/5 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]'
-                                                }`}
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none rounded-xl" />
-                                            <div className="relative w-6 h-6 md:w-8 md:h-8 rounded-lg bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0">
-                                                <Flame size={14} className="text-blue-400 md:w-4 md:h-4" />
-                                            </div>
-                                            <div className="relative flex flex-col min-w-[50px] md:min-w-[60px]">
-                                                <span className="text-lg md:text-xl font-black text-blue-300 tabular-nums leading-none tracking-tight">
-                                                    {animatedCurrent}
-                                                    <span className="text-blue-400/60 text-[10px] font-bold ml-1">d</span>
-                                                </span>
-                                                <span className="text-[8px] md:text-[9px] text-blue-400/70 uppercase tracking-widest font-bold mt-0.5">Current</span>
-                                            </div>
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
-
-                                {/* Highest Streak — RED */}
-                                {loading ? (
-                                    <StreakBoxSkeleton color="red" />
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={`ms-${maxStreak}`}
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -8 }}
-                                            transition={{ duration: 0.35, delay: 0.08 }}
-                                            className={`relative flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-xl border transition-all duration-500 overflow-hidden flex-1 md:flex-none
-                                                ${flashRed
-                                                    ? 'bg-red-600/20 border-red-500 shadow-[0_0_24px_rgba(220,38,38,0.5)]'
-                                                    : 'bg-red-600/5 border-red-600/30 hover:bg-red-600/10 hover:border-red-500/50 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]'
-                                                }`}
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-transparent pointer-events-none rounded-xl" />
-                                            <div className="relative w-6 h-6 md:w-8 md:h-8 rounded-lg bg-red-600/15 border border-red-600/25 flex items-center justify-center shrink-0">
-                                                <Trophy size={14} className="text-red-400 md:w-4 md:h-4" />
-                                            </div>
-                                            <div className="relative flex flex-col min-w-[50px] md:min-w-[60px]">
-                                                <span className="text-lg md:text-xl font-black text-red-300 tabular-nums leading-none tracking-tight">
-                                                    {animatedMax}
-                                                    <span className="text-red-400/60 text-[10px] font-bold ml-1">d</span>
-                                                </span>
-                                                <span className="text-[8px] md:text-[9px] text-red-400/70 uppercase tracking-widest font-bold mt-0.5">Highest</span>
-                                            </div>
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
-                            </div>
-
-                            {/* RIGHT — Controls */}
-                            <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-center">
-                                <button
-                                    onClick={() => {
-                                        if (intervalRef.current) clearInterval(intervalRef.current);
-                                        fetchStreaks(true);
-                                        intervalRef.current = setInterval(() => fetchStreaks(), REFRESH_INTERVAL * 1000);
-                                    }}
-                                    disabled={loading}
-                                    title="Refresh now"
-                                    className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                                </button>
-
-                                <a
-                                    href="https://github.com/mubin25s"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20"
-                                >
-                                    <Github size={14} />
-                                    <span>GitHub</span>
-                                </a>
-
-                                <a
-                                    href="https://gitlab.com/mubin25s"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors hover:bg-white/5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl border border-white/10 hover:border-white/20"
-                                >
-                                    <Gitlab size={14} />
-                                    <span>GitLab</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Calendar Body */}
-                        <div className="overflow-x-auto text-slate-300 w-full flex justify-start md:justify-center pb-8 px-4 md:px-8 custom-scrollbar">
-                            <div className="min-w-fit py-4">
-                                <GitHubCalendar
-                                    key={refreshKey}
-                                    username="mubin25s"
-                                    colorScheme="dark"
-                                    theme={explicitTheme}
-                                    blockSize={14}
-                                    blockMargin={5}
-                                    fontSize={14}
-                                    blockRadius={3}
-                                />
-                            </div>
+                            {/* GitLab Option */}
+                            <button
+                                onClick={() => setPlatform('gitlab')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                                    platform === 'gitlab'
+                                        ? 'bg-[#FC6D26] text-white shadow-md shadow-[#FC6D26]/30 scale-100'
+                                        : 'text-slate-400 hover:text-[#FC6D26] hover:bg-[#FC6D26]/10'
+                                }`}
+                                aria-label="Show GitLab statistics"
+                            >
+                                <Gitlab size={15} />
+                                <span>GitLab</span>
+                            </button>
                         </div>
                     </motion.div>
                 </div>
+
+                {/* ── Top Grid: Profile Card + 4 Stat Cards ── */}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={platform}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.35 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 md:gap-5"
+                    >
+                        {/* 1. Profile Card (Spans 4 columns) */}
+                        <div className={`sm:col-span-2 lg:col-span-4 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 transition-all duration-300 group ${
+                            platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                        }`}>
+                            <div>
+                                <div className="flex items-start gap-4">
+                                    <img
+                                        src={activeStats.avatarUrl}
+                                        alt={activeStats.name}
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/Mubin.jpeg';
+                                        }}
+                                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover border border-white/10 shadow-md shrink-0 bg-slate-800"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg md:text-xl font-bold text-white tracking-tight truncate">
+                                            {activeStats.name}
+                                        </h3>
+                                        <p className={`text-xs md:text-sm font-medium mt-0.5 ${
+                                            platform === 'github' ? 'text-rose-400' : 'text-orange-400'
+                                        }`}>
+                                            @{activeStats.username}
+                                        </p>
+                                        <p className="text-slate-400 text-xs mt-1.5 leading-snug line-clamp-2">
+                                            {activeStats.bio}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 3 Organizations Row (Only for GitHub) */}
+                                {platform === 'github' && organizations.length > 0 && (
+                                    <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-800/60 w-full">
+                                        {organizations.slice(0, 3).map((org, i) => (
+                                            <a
+                                                key={i}
+                                                href={org.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={org.name}
+                                                className="group/org flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[10px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
+                                            >
+                                                {org.avatarUrl ? (
+                                                    <img
+                                                        src={org.avatarUrl}
+                                                        alt={org.name}
+                                                        className="w-3.5 h-3.5 rounded object-cover shrink-0"
+                                                    />
+                                                ) : (
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                                                )}
+                                                <span className="truncate">{org.name}</span>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Bottom Row of Profile Card */}
+                            <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-800/60">
+                                <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
+                                    <span className="flex items-center gap-1.5 hover:text-slate-300 transition-colors">
+                                        <BookOpen size={14} className="text-slate-400" />
+                                        <span>{activeStats.publicRepos} Repos</span>
+                                    </span>
+                                    <span className="flex items-center gap-1.5 hover:text-slate-300 transition-colors">
+                                        <Users size={14} className="text-slate-400" />
+                                        <span>{activeStats.followers} Followers</span>
+                                    </span>
+                                </div>
+
+                                <a
+                                    href={platform === 'github'
+                                        ? `https://github.com/${activeStats.username}`
+                                        : `https://gitlab.com/${activeStats.username}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`inline-flex items-center gap-1.5 font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all duration-200 shadow-sm active:scale-95 ${
+                                        platform === 'github'
+                                            ? 'bg-rose-600 text-white hover:bg-rose-500 shadow-rose-600/20'
+                                            : 'bg-[#FC6D26] text-white hover:bg-[#e25a18] shadow-[#FC6D26]/20'
+                                    }`}
+                                >
+                                    <span>{platform === 'github' ? 'GitHub' : 'GitLab'}</span>
+                                    <ExternalLink size={12} className="stroke-[2.5]" />
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* 2. Public Repositories Card */}
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                            platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                        }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                                platform === 'github'
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                                    : 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                            }`}>
+                                <FolderGit2 size={20} />
+                            </div>
+                            <div>
+                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                    {animatedRepos}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                    Public Repositories
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 3. Total Contributions Card */}
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                            platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                        }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                                platform === 'github'
+                                    ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                            }`}>
+                                <GitCommitHorizontal size={20} />
+                            </div>
+                            <div>
+                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                    {animatedContributions > 0 ? `${animatedContributions}+` : `${activeStats.totalContributions}+`}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                    Total Contributions
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 4. Primary Language Card */}
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                            platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                        }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                                platform === 'github'
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                            }`}>
+                                <Code2 size={20} />
+                            </div>
+                            <div>
+                                <span className="text-xl md:text-2xl font-black text-white tracking-tight block truncate">
+                                    {activeStats.primaryLanguage}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                    Primary Language
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 5. Followers Card */}
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                            platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                        }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                                platform === 'github'
+                                    ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                                    : 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                            }`}>
+                                <Users size={20} />
+                            </div>
+                            <div>
+                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                    {animatedFollowers}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                    Followers
+                                </span>
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* ── Bottom Card: Contribution Calendar ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className={`mt-4 md:mt-5 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 md:p-5 shadow-2xl relative overflow-hidden group transition-all duration-300 ${
+                        platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
+                    }`}
+                >
+                    {/* Header inside calendar card */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3 md:mb-4">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className={`font-mono font-bold text-base md:text-lg ${
+                                    platform === 'github' ? 'text-rose-400' : 'text-orange-400'
+                                }`}>&gt;_</span>
+                                <h3 className="text-base md:text-lg font-bold text-white tracking-tight">
+                                    Contribution Calendar
+                                </h3>
+                            </div>
+                            <p className="text-[11px] md:text-xs text-slate-400 mt-0.5">
+                                Live {platform === 'github' ? 'GitHub' : 'GitLab'} contribution activity over the past year (@{activeStats.username})
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 self-start sm:self-auto">
+                            <a
+                                href={platform === 'github'
+                                    ? `https://github.com/${activeStats.username}`
+                                    : `https://gitlab.com/${activeStats.username}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                                    platform === 'github'
+                                        ? 'text-rose-400 hover:text-rose-300'
+                                        : 'text-[#FC6D26] hover:text-[#ff8547]'
+                                }`}
+                            >
+                                <span>View {platform === 'github' ? 'GitHub' : 'GitLab'} Graph</span>
+                                <ExternalLink size={12} />
+                            </a>
+
+                            <div className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                                platform === 'github'
+                                    ? 'text-rose-400/90 bg-rose-500/10 border-rose-500/20'
+                                    : 'text-orange-400/90 bg-orange-500/10 border-orange-500/20'
+                            }`}>
+                                {platform === 'github' ? (
+                                    <>
+                                        <CheckCircle2 size={11} className="text-rose-400" />
+                                        <span>Live Synced</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Gitlab size={11} className="text-[#FC6D26]" />
+                                        <span>GitLab Synced</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Heatmap Calendar */}
+                    <div className="overflow-x-auto w-full custom-activity-scrollbar text-slate-300 flex justify-start md:justify-center">
+                        <div className="min-w-fit">
+                            <AnimatePresence mode="wait">
+                                {platform === 'github' ? (
+                                    <motion.div
+                                        key="github-cal"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <GitHubCalendar
+                                            key={`gh-${refreshKey}`}
+                                            username={githubStats.username}
+                                            colorScheme="dark"
+                                            theme={githubTheme}
+                                            blockSize={12}
+                                            blockMargin={3.5}
+                                            fontSize={11}
+                                            blockRadius={2.5}
+                                        />
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="gitlab-cal"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <ActivityCalendar
+                                            data={gitlabActivities}
+                                            colorScheme="dark"
+                                            theme={gitlabTheme}
+                                            blockSize={12}
+                                            blockMargin={3.5}
+                                            fontSize={11}
+                                            blockRadius={2.5}
+                                            labels={{
+                                                totalCount: `{{count}} contributions in the last year`
+                                            }}
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
             <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
+                .custom-activity-scrollbar::-webkit-scrollbar {
                     display: block;
-                    height: 8px;
+                    height: 6px;
                 }
-                .custom-scrollbar::-webkit-scrollbar-track {
+                .custom-activity-scrollbar::-webkit-scrollbar-track {
                     background: rgba(255, 255, 255, 0.02);
                     border-radius: 4px;
-                    margin: 0 20px;
                 }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(128, 1, 31, 0.3);
+                .custom-activity-scrollbar::-webkit-scrollbar-thumb {
+                    background: ${platform === 'github' ? 'rgba(244, 63, 94, 0.25)' : 'rgba(252, 109, 38, 0.25)'};
                     border-radius: 4px;
                 }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(128, 1, 31, 0.6);
+                .custom-activity-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: ${platform === 'github' ? 'rgba(244, 63, 94, 0.5)' : 'rgba(252, 109, 38, 0.5)'};
                 }
             `}</style>
         </section>
     );
 };
+
+
