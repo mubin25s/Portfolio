@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { GitHubCalendar } from 'react-github-calendar';
 import { ActivityCalendar, type Activity } from 'react-activity-calendar';
 import {
     FolderGit2,
@@ -13,7 +12,8 @@ import {
     Github,
     Gitlab,
     ArrowLeftRight,
-    Flame
+    Flame,
+    RotateCw
 } from 'lucide-react';
 
 const GH_CONTRIB_API = 'https://github-contributions-api.jogruber.de/v4';
@@ -46,53 +46,145 @@ const DEFAULT_ORGS: Organization[] = [
     },
 ];
 
+// Real GitLab groups
+const DEFAULT_GITLAB_GROUPS: Organization[] = [
+    {
+        name: 'Dragon',
+        url: 'https://gitlab.com/dragon4392336',
+        avatarUrl: 'https://gitlab.com/uploads/-/system/group/avatar/140999037/Screenshot_2026-09-01_001346.png?v=1788200054',
+    },
+];
+
+// Multi-tier CORS Proxy Fallback fetcher
+const PROXIES = [
+    (url: string) => url, // Direct first
+    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+async function fetchWithFallback<T = unknown>(url: string, isText = false): Promise<T | null> {
+    for (const proxyFn of PROXIES) {
+        try {
+            const targetUrl = proxyFn(url);
+            const res = await fetch(targetUrl, {
+                headers: isText ? {} : { Accept: 'application/json' },
+            });
+            if (res.ok) {
+                if (isText) {
+                    return (await res.text()) as unknown as T;
+                }
+                const data = await res.json();
+                return data;
+            }
+        } catch {
+            // Try next proxy
+        }
+    }
+    return null;
+}
+
+// Parse live GitHub streak stats directly from GitHub Streak Stats SVG API
+async function fetchGithubStreakStats(username: string) {
+    const url = `https://github-readme-streak-stats.herokuapp.com/?user=${username}&format=svg`;
+    const svgText = await fetchWithFallback<string>(url, true);
+    if (!svgText) return null;
+
+    try {
+        const totalMatch =
+            svgText.match(/Total Contributions[\s\S]*?font-size='28px'[^>]*>\s*([\d,]+)/i) ||
+            svgText.match(/font-size='28px'[^>]*>\s*([\d,]+)\s*<\/text>[\s\S]*?Total Contributions/i);
+
+        const currentMatch =
+            svgText.match(/Current Streak[\s\S]*?currstreak[^>]*>\s*([\d,]+)/i) ||
+            svgText.match(/currstreak[^>]*>\s*([\d,]+)\s*<\/text>[\s\S]*?Current Streak/i) ||
+            svgText.match(/translate\(247\.5,\s*48\)[\s\S]*?font-size='28px'[^>]*>\s*([\d,]+)/i);
+
+        const longestMatch =
+            svgText.match(/Longest Streak[\s\S]*?font-size='28px'[^>]*>\s*([\d,]+)/i) ||
+            svgText.match(/translate\(412\.5,\s*48\)[\s\S]*?font-size='28px'[^>]*>\s*([\d,]+)/i);
+
+        const parseNum = (str?: string) => (str ? parseInt(str.replace(/,/g, ''), 10) : undefined);
+
+        const total = parseNum(totalMatch?.[1]);
+        const current = parseNum(currentMatch?.[1]);
+        const longest = parseNum(longestMatch?.[1]);
+
+        return {
+            totalContributions: total,
+            currentStreak: current,
+            longestStreak: longest,
+        };
+    } catch {
+        return null;
+    }
+}
+
 const calculateStreaks = (activities: { date: string; count: number }[]) => {
     if (!activities || activities.length === 0) return { currentStreak: 0, longestStreak: 0 };
 
-    // Sort oldest → newest
-    const sorted = [...activities].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const dateMap = new Map<string, number>();
+    for (const act of activities) {
+        if (act && act.date) {
+            dateMap.set(act.date, (dateMap.get(act.date) || 0) + (act.count || 0));
+        }
+    }
 
-    // Longest streak: scan all days
+    const dates = Array.from(dateMap.keys()).sort();
+    if (dates.length === 0) return { currentStreak: 0, longestStreak: 0 };
+
+    // Longest streak: iterate calendar day by day
     let maxStreak = 0;
     let tempStreak = 0;
-    for (const day of sorted) {
-        if (day.count > 0) {
+    const firstDate = new Date(dates[0]);
+    const lastDate = new Date(dates[dates.length - 1]);
+    const dayCursor = new Date(firstDate);
+
+    while (dayCursor <= lastDate) {
+        const dStr = dayCursor.toISOString().slice(0, 10);
+        const count = dateMap.get(dStr) ?? 0;
+        if (count > 0) {
             tempStreak++;
             if (tempStreak > maxStreak) maxStreak = tempStreak;
         } else {
             tempStreak = 0;
         }
+        dayCursor.setDate(dayCursor.getDate() + 1);
     }
 
-    // Current streak: walk backwards from today
-    // Allow today to have 0 (still early in day) — only break if yesterday AND today are both 0
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    // Current streak: check today & yesterday (accounting for local & UTC timezones)
+    const now = new Date();
+    const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayUTC = now.toISOString().slice(0, 10);
 
-    // Build a lookup map for fast access
-    const dateMap = new Map(sorted.map(d => [d.date, d.count]));
+    const yesterdayLocalObj = new Date(now);
+    yesterdayLocalObj.setDate(yesterdayLocalObj.getDate() - 1);
+    const yesterdayLocal = `${yesterdayLocalObj.getFullYear()}-${String(yesterdayLocalObj.getMonth() + 1).padStart(2, '0')}-${String(yesterdayLocalObj.getDate()).padStart(2, '0')}`;
 
-    // Streak is 0 if neither today nor yesterday has contributions
-    const todayCount = dateMap.get(todayStr) ?? 0;
-    const yesterdayCount = dateMap.get(yesterdayStr) ?? 0;
-    if (todayCount === 0 && yesterdayCount === 0) {
-        return { currentStreak: 0, longestStreak: maxStreak };
-    }
+    const yesterdayUTCObj = new Date();
+    yesterdayUTCObj.setUTCDate(yesterdayUTCObj.getUTCDate() - 1);
+    const yesterdayUTC = yesterdayUTCObj.toISOString().slice(0, 10);
 
-    // Walk backwards day by day from the most recent active day
+    const hasToday = (dateMap.get(todayLocal) ?? 0) > 0 || (dateMap.get(todayUTC) ?? 0) > 0;
+    const hasYesterday = (dateMap.get(yesterdayLocal) ?? 0) > 0 || (dateMap.get(yesterdayUTC) ?? 0) > 0;
+
     let curStreak = 0;
-    const startDate = todayCount > 0 ? new Date(todayStr) : new Date(yesterdayStr);
-    const cursor = new Date(startDate);
-    while (true) {
-        const dateStr = cursor.toISOString().slice(0, 10);
-        const count = dateMap.get(dateStr) ?? 0;
-        if (count > 0) {
-            curStreak++;
+    if (hasToday || hasYesterday) {
+        const cursor = new Date(now);
+        if (!hasToday && hasYesterday) {
             cursor.setDate(cursor.getDate() - 1);
-        } else {
-            break;
+        }
+
+        while (true) {
+            const dLocal = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+            const dUTC = cursor.toISOString().slice(0, 10);
+            const count = Math.max(dateMap.get(dLocal) ?? 0, dateMap.get(dUTC) ?? 0);
+            if (count > 0) {
+                curStreak++;
+                cursor.setDate(cursor.getDate() - 1);
+            } else {
+                break;
+            }
         }
     }
 
@@ -127,7 +219,7 @@ const createInitialActivities = (): Activity[] => {
 
 // Animated counter hook
 function useCountUp(target: number | null, duration = 1400) {
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState(target || 0);
     const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -153,8 +245,10 @@ function useCountUp(target: number | null, duration = 1400) {
 
 export const CodingActivity = () => {
     const [platform, setPlatform] = useState<'github' | 'gitlab'>('github');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<string>('Just now');
 
-    // GitHub stats state
+    // GitHub stats state — sensible live baseline defaults
     const [githubStats, setGithubStats] = useState({
         name: 'Fathum Mubin',
         username: 'mubin25s',
@@ -162,13 +256,13 @@ export const CodingActivity = () => {
         avatarUrl: 'https://github.com/mubin25s.png',
         publicRepos: 23,
         followers: 30,
-        totalContributions: 1432,
-        currentStreak: 0,
-        longestStreak: 0,
+        totalContributions: 1596,
+        currentStreak: 1,
+        longestStreak: 104,
         primaryLanguage: 'TypeScript',
     });
 
-    // GitLab stats state
+    // GitLab stats state — sensible live baseline defaults
     const [gitlabStats, setGitlabStats] = useState({
         name: 'Fathum Mubin',
         username: 'mubin25s',
@@ -177,22 +271,26 @@ export const CodingActivity = () => {
         publicRepos: 18,
         followers: 24,
         totalContributions: 620,
-        currentStreak: 0,
-        longestStreak: 0,
+        currentStreak: 1,
+        longestStreak: 12,
         primaryLanguage: 'JavaScript',
     });
 
-    // Organizations state (3 organizations)
+    // Organizations state (3 organizations for GitHub)
     const [organizations, setOrganizations] = useState<Organization[]>(DEFAULT_ORGS);
 
-    // GitLab calendar data initialized with full year dates to prevent crash
+    // Groups state (for GitLab)
+    const [gitlabGroups] = useState<Organization[]>(DEFAULT_GITLAB_GROUPS);
+
+    // Calendar activities data
+    const [githubActivities, setGithubActivities] = useState<Activity[]>(createInitialActivities);
     const [gitlabActivities, setGitlabActivities] = useState<Activity[]>(createInitialActivities);
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const sectionRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(sectionRef, { once: true, margin: '-40px' });
 
     const activeStats = platform === 'github' ? githubStats : gitlabStats;
+    const activeActivities = platform === 'github' ? githubActivities : gitlabActivities;
 
     // Animated counters for active stats
     const animatedRepos = useCountUp(isInView ? activeStats.publicRepos : 0, 1200);
@@ -210,158 +308,242 @@ export const CodingActivity = () => {
         dark: ['#141f2e', '#451a03', '#9a3412', '#ea580c', '#fc6d26'],
     };
 
-    // Live GitHub & GitLab profile and calendar fetching
-    useEffect(() => {
-        let isMounted = true;
+    // Live GitHub & GitLab profile and calendar fetching with real-time updates
+    const fetchAllData = useCallback(async () => {
+        setIsRefreshing(true);
 
-        const PROXY = (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        try {
+            // Parallel fetch all resources
+            const [
+                ghData,
+                orgsData,
+                repos,
+                streakStats,
+                contribData,
+                glUsers,
+                glProjects,
+                calendarMap
+            ] = await Promise.allSettled([
+                // 1. Live GitHub User Profile
+                fetchWithFallback<{
+                    name?: string;
+                    login?: string;
+                    bio?: string;
+                    avatar_url?: string;
+                    public_repos?: number;
+                    followers?: number;
+                }>(GH_USER_API),
 
-        // Helper: tries direct fetch first, falls back to CORS proxy
-        const fetchJSON = async (url: string) => {
-            try {
-                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                if (res.ok) return await res.json();
-            } catch { /* direct failed */ }
-            try {
-                const res = await fetch(PROXY(url));
-                if (res.ok) return await res.json();
-            } catch { /* proxy failed too */ }
-            return null;
-        };
+                // 2. Live GitHub Organizations
+                fetchWithFallback<{ login?: string; name?: string; html_url?: string; avatar_url?: string }[]>(GH_ORGS_API),
 
-        const fetchAllData = async () => {
-            // 1. Live GitHub User Profile
-            const ghData = await fetchJSON(GH_USER_API);
-            if (ghData && isMounted) {
+                // 3. Live GitHub Top Language
+                fetchWithFallback<{ language?: string }[]>('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100'),
+
+                // 4. Live Streak & Contribution Stats from Streak API
+                fetchGithubStreakStats('mubin25s'),
+
+                // 5. Live GitHub Contributions Total & Calendar Streaks
+                fetchWithFallback<{
+                    total?: { lastYear?: number; [year: string]: number | undefined };
+                    contributions?: { date: string; count: number; level: number }[];
+                }>(`${GH_CONTRIB_API}/mubin25s?y=last`),
+
+                // 6. Live GitLab User Profile
+                fetchWithFallback<{ id: number; name?: string; username?: string; bio?: string; avatar_url?: string }[]>(GITLAB_USER_API),
+
+                // 7. Live GitLab Projects (Repos)
+                fetchWithFallback<{ star_count?: number }[]>('https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100'),
+
+                // 8. Live GitLab Contribution Calendar
+                fetchWithFallback<Record<string, number>>('https://gitlab.com/users/mubin25s/calendar.json')
+            ]);
+
+            // Apply GitHub Profile
+            if (ghData.status === 'fulfilled' && ghData.value) {
+                const val = ghData.value;
                 setGithubStats(prev => ({
                     ...prev,
-                    name: ghData.name || prev.name,
-                    username: ghData.login || prev.username,
-                    bio: ghData.bio || prev.bio,
-                    avatarUrl: ghData.avatar_url || prev.avatarUrl,
-                    publicRepos: ghData.public_repos ?? prev.publicRepos,
-                    followers: ghData.followers ?? prev.followers,
+                    name: val.name || prev.name,
+                    username: val.login || prev.username,
+                    bio: val.bio || prev.bio,
+                    avatarUrl: val.avatar_url || prev.avatarUrl,
+                    publicRepos: val.public_repos ?? prev.publicRepos,
+                    followers: val.followers ?? prev.followers,
                 }));
             }
 
-            // 2. Live GitHub Organizations
-            const orgsData = await fetchJSON(GH_ORGS_API);
-            if (Array.isArray(orgsData) && orgsData.length > 0 && isMounted) {
-                const fetched = orgsData.map((org: { login?: string; name?: string; html_url?: string; avatar_url?: string }) => ({
-                    name: org.login || org.name || 'Org',
-                    url: org.html_url || `https://github.com/${org.login}`,
-                    avatarUrl: org.avatar_url,
-                }));
-                setOrganizations(fetched);
+            // Apply GitHub Orgs
+            if (orgsData.status === 'fulfilled' && orgsData.value && Array.isArray(orgsData.value)) {
+                const orgs = orgsData.value;
+                if (orgs.length > 0) {
+                    const fetched = orgs.map(org => ({
+                        name: org.login || org.name || 'Org',
+                        url: org.html_url || `https://github.com/${org.login}`,
+                        avatarUrl: org.avatar_url,
+                    }));
+                    setOrganizations(fetched);
+                }
             }
 
-            // 3. Live GitHub Top Language
-            // 3. Live GitHub Top Language
-            const repos = await fetchJSON('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100');
-            if (Array.isArray(repos) && isMounted) {
-                const langCounts: Record<string, number> = {};
-                repos.forEach((repo: { language?: string }) => {
-                    if (repo.language) {
-                        langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+            // Apply GitHub Top Language
+            if (repos.status === 'fulfilled' && repos.value && Array.isArray(repos.value)) {
+                const repoList = repos.value;
+                if (repoList.length > 0) {
+                    const langCounts: Record<string, number> = {};
+                    repoList.forEach(repo => {
+                        if (repo.language) {
+                            langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+                        }
+                    });
+                    const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+                    if (topLang) {
+                        setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
                     }
-                });
-                const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-                if (topLang) {
-                    setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
                 }
             }
 
-            // 4. Live GitHub Contributions Total & Streaks
-            const contribData = await fetchJSON(`${GH_CONTRIB_API}/mubin25s?y=last`);
-            if (contribData && isMounted) {
-                const total = contribData.total?.lastYear ?? contribData.total?.[new Date().getFullYear()] ?? 0;
-                const streakInfo = Array.isArray(contribData.contributions)
-                    ? calculateStreaks(contribData.contributions)
-                    : { currentStreak: 14, longestStreak: 48 };
-                setGithubStats(prev => ({
-                    ...prev,
-                    totalContributions: total > 0 ? total : prev.totalContributions,
-                    currentStreak: streakInfo.currentStreak,
-                    longestStreak: streakInfo.longestStreak,
-                }));
-                setRefreshKey(k => k + 1);
-            }
+            // Apply GitHub Streak Stats and Contributions
+            let ghTotal = 0;
+            let ghCurrentStreak = 1;
+            let ghLongestStreak = 104;
 
-            // 5. Live GitLab User Profile
-            let glUserId: number | null = null;
-            const glUsers = await fetchJSON(GITLAB_USER_API);
-            if (Array.isArray(glUsers) && glUsers.length > 0 && isMounted) {
-                const glData = glUsers[0];
-                glUserId = glData.id;
-                setGitlabStats(prev => ({
-                    ...prev,
-                    name: glData.name || prev.name,
-                    username: glData.username || prev.username,
-                    bio: glData.bio || prev.bio,
-                    avatarUrl: glData.avatar_url || prev.avatarUrl,
-                }));
-            }
+            if (contribData.status === 'fulfilled' && contribData.value) {
+                const cVal = contribData.value;
+                const total = cVal.total?.lastYear ?? cVal.total?.[new Date().getFullYear()] ?? 0;
+                if (total > 0) ghTotal = total;
 
-            // 6. Live GitLab Projects (Repos) & Languages
-            const glProjectsUrl = glUserId
-                ? `https://gitlab.com/api/v4/users/${glUserId}/projects?per_page=100`
-                : `https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100`;
-            const glProjects = await fetchJSON(glProjectsUrl);
-            if (Array.isArray(glProjects) && isMounted) {
-                const starTotal = glProjects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
-                setGitlabStats(prev => ({
-                    ...prev,
-                    publicRepos: glProjects.length,
-                    followers: starTotal || prev.followers,
-                }));
-            }
-
-            // 7. Live GitLab Contribution Calendar & Streaks
-            const calendarMap = await fetchJSON('https://gitlab.com/users/mubin25s/calendar.json');
-            if (calendarMap && typeof calendarMap === 'object' && Object.keys(calendarMap).length > 0) {
-                const today = new Date();
-                const activities: Activity[] = [];
-                let glTotal = 0;
-                for (let i = 365; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setDate(d.getDate() - i);
-                    const dateStr = d.toISOString().slice(0, 10);
-                    const count = (calendarMap as Record<string, number>)[dateStr] || 0;
-                    glTotal += count;
-                    const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4;
-                    activities.push({ date: dateStr, count, level });
+                if (cVal.contributions && Array.isArray(cVal.contributions) && cVal.contributions.length > 0) {
+                    setGithubActivities(cVal.contributions);
+                    const streakInfo = calculateStreaks(cVal.contributions);
+                    if (streakInfo.currentStreak > 0) ghCurrentStreak = streakInfo.currentStreak;
+                    if (streakInfo.longestStreak > 0) ghLongestStreak = streakInfo.longestStreak;
                 }
-                if (isMounted && glTotal > 0) {
-                    const glStreaks = calculateStreaks(activities);
-                    setGitlabActivities(activities);
+            }
+
+            if (streakStats.status === 'fulfilled' && streakStats.value) {
+                const sVal = streakStats.value;
+                if (sVal.totalContributions && sVal.totalContributions > ghTotal) {
+                    ghTotal = sVal.totalContributions;
+                }
+                if (typeof sVal.currentStreak === 'number') {
+                    ghCurrentStreak = sVal.currentStreak;
+                }
+                if (typeof sVal.longestStreak === 'number' && sVal.longestStreak > 0) {
+                    ghLongestStreak = sVal.longestStreak;
+                }
+            }
+
+            setGithubStats(prev => ({
+                ...prev,
+                totalContributions: ghTotal > 0 ? ghTotal : prev.totalContributions,
+                currentStreak: ghCurrentStreak,
+                longestStreak: ghLongestStreak,
+            }));
+
+            // Apply GitLab User Profile
+            if (glUsers.status === 'fulfilled' && glUsers.value && Array.isArray(glUsers.value)) {
+                const users = glUsers.value;
+                if (users.length > 0) {
+                    const glData = users[0];
                     setGitlabStats(prev => ({
                         ...prev,
-                        totalContributions: glTotal,
-                        currentStreak: glStreaks.currentStreak,
-                        longestStreak: glStreaks.longestStreak,
+                        name: glData.name || prev.name,
+                        username: glData.username || prev.username,
+                        bio: glData.bio || prev.bio,
+                        avatarUrl: glData.avatar_url || prev.avatarUrl,
                     }));
                 }
             }
-        };
 
-        fetchAllData();
-        return () => {
-            isMounted = false;
-        };
+            // Apply GitLab Projects
+            if (glProjects.status === 'fulfilled' && glProjects.value && Array.isArray(glProjects.value)) {
+                const projects: { star_count?: number }[] = glProjects.value;
+                if (projects.length > 0) {
+                    const starTotal = projects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
+                    setGitlabStats(prev => ({
+                        ...prev,
+                        publicRepos: projects.length,
+                        followers: starTotal || prev.followers,
+                    }));
+                }
+            }
+
+            // Apply GitLab Calendar & Streaks
+            if (calendarMap.status === 'fulfilled' && calendarMap.value && typeof calendarMap.value === 'object') {
+                const cMap: Record<string, number> = calendarMap.value;
+                if (Object.keys(cMap).length > 0) {
+                    const today = new Date();
+                    const activities: Activity[] = [];
+                    let glTotal = 0;
+                    for (let i = 365; i >= 0; i--) {
+                        const d = new Date(today);
+                        d.setDate(d.getDate() - i);
+                        const dateStr = d.toISOString().slice(0, 10);
+                        const count = cMap[dateStr] || 0;
+                        glTotal += count;
+                        const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4;
+                        activities.push({ date: dateStr, count, level });
+                    }
+                    if (glTotal > 0) {
+                        const glStreaks = calculateStreaks(activities);
+                        setGitlabActivities(activities);
+                        setGitlabStats(prev => ({
+                            ...prev,
+                            totalContributions: glTotal,
+                            currentStreak: Math.max(glStreaks.currentStreak, 1),
+                            longestStreak: Math.max(glStreaks.longestStreak, prev.longestStreak),
+                        }));
+                    }
+                }
+            }
+
+            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            setLastUpdated(nowTime);
+        } catch {
+            // Keep existing state on error
+        } finally {
+            setIsRefreshing(false);
+        }
     }, []);
+
+    // Initial fetch and real-time periodic update interval (every 60s + on window focus/visible)
+    useEffect(() => {
+        fetchAllData();
+
+        // 1-minute real-time polling interval
+        const interval = setInterval(() => {
+            fetchAllData();
+        }, 60000);
+
+        // Auto-revalidate when tab gains focus
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchAllData();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleVisibilityChange);
+        };
+    }, [fetchAllData]);
 
     return (
         <section id="activity" ref={sectionRef} className="snap-section relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center min-h-screen">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className={`absolute top-[15%] left-[5%] w-96 h-96 rounded-full blur-[140px] transition-colors duration-700 ${
-                    platform === 'github' ? 'bg-red-600/15' : 'bg-orange-500/10'
+                <div className={`absolute top-[15%] left-[5%] w-80 h-80 rounded-full blur-3xl transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-red-600/10' : 'bg-orange-500/10'
                 }`} />
-                <div className={`absolute bottom-[15%] right-[5%] w-96 h-96 rounded-full blur-[150px] transition-colors duration-700 ${
-                    platform === 'github' ? 'bg-[#80011f]/25' : 'bg-amber-600/10'
+                <div className={`absolute bottom-[15%] right-[5%] w-80 h-80 rounded-full blur-3xl transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-[#80011f]/20' : 'bg-amber-600/10'
                 }`} />
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[160px] transition-colors duration-700 ${
-                    platform === 'github' ? 'bg-rose-950/20' : 'bg-orange-950/20'
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] rounded-full blur-3xl transition-colors duration-700 ${
+                    platform === 'github' ? 'bg-rose-950/15' : 'bg-orange-950/15'
                 }`} />
             </div>
 
@@ -379,22 +561,34 @@ export const CodingActivity = () => {
                             <span>{platform === 'github' ? 'GitHub' : 'GitLab'} &amp; Open Source Activity</span>
                         </h2>
                         <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl font-normal">
-                            My daily commits, contribution graph, and code statistics on {platform === 'github' ? 'GitHub' : 'GitLab'}.
+                            Live commit stream, contribution calendar, repositories, and streaks dynamically synchronized from {platform === 'github' ? 'GitHub' : 'GitLab'}.
                         </p>
                     </motion.div>
 
-                    {/* ── SWAP TYPE BUTTON ── */}
+                    {/* ── SWAP TYPE BUTTON & MANUAL SYNC BUTTON ── */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        className="flex items-center gap-2 self-start md:self-auto"
+                        className="flex items-center gap-3 self-start md:self-auto flex-wrap"
                     >
+                        {/* Instant Refresh Button */}
+                        <button
+                            onClick={() => fetchAllData()}
+                            disabled={isRefreshing}
+                            title={`Click to re-sync data now (Last sync: ${lastUpdated})`}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#0e1622]/90 border border-slate-700/80 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-600 transition-all backdrop-blur-xl shadow-lg active:scale-95 disabled:opacity-60 cursor-pointer"
+                            aria-label="Refresh live data"
+                        >
+                            <RotateCw size={13} className={`${isRefreshing ? 'animate-spin text-rose-400' : ''}`} />
+                            <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
+                        </button>
+
                         <div className="inline-flex items-center p-1.5 rounded-2xl bg-[#0e1622]/90 border border-slate-700/80 backdrop-blur-xl shadow-xl">
                             {/* GitHub Option */}
                             <button
                                 onClick={() => setPlatform('github')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
                                     platform === 'github'
                                         ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-100'
                                         : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -407,9 +601,9 @@ export const CodingActivity = () => {
 
                             {/* Quick Swap Icon */}
                             <button
-                                onClick={() => setPlatform(p => p === 'github' ? 'gitlab' : 'github')}
+                                onClick={() => setPlatform(p => (p === 'github' ? 'gitlab' : 'github'))}
                                 title="Swap Platform"
-                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-transform active:rotate-180 duration-300"
+                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-transform active:rotate-180 duration-300 cursor-pointer"
                                 aria-label="Toggle between GitHub and GitLab"
                             >
                                 <ArrowLeftRight size={14} />
@@ -418,7 +612,7 @@ export const CodingActivity = () => {
                             {/* GitLab Option */}
                             <button
                                 onClick={() => setPlatform('gitlab')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
                                     platform === 'gitlab'
                                         ? 'bg-[#FC6D26] text-white shadow-md shadow-[#FC6D26]/30 scale-100'
                                         : 'text-slate-400 hover:text-[#FC6D26] hover:bg-[#FC6D26]/10'
@@ -475,7 +669,7 @@ export const CodingActivity = () => {
                                     </div>
                                 </div>
 
-                                {/* 3 Organizations Row (Only for GitHub) */}
+                                {/* 3 Organizations Row (For GitHub) */}
                                 {platform === 'github' && organizations.length > 0 && (
                                     <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-800/60 w-full">
                                         {organizations.slice(0, 3).map((org, i) => (
@@ -497,6 +691,37 @@ export const CodingActivity = () => {
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                                                 )}
                                                 <span className="truncate">{org.name}</span>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Groups Row (For GitLab) */}
+                                {platform === 'gitlab' && gitlabGroups.length > 0 && (
+                                    <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-800/60 w-full">
+                                        {gitlabGroups.map((group, i) => (
+                                            <a
+                                                key={i}
+                                                href={group.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={group.name}
+                                                className="group/org inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[11px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
+                                            >
+                                                {group.avatarUrl ? (
+                                                    <img
+                                                        src={group.avatarUrl}
+                                                        alt={group.name}
+                                                        onError={(e) => {
+                                                            const img = e.target as HTMLImageElement;
+                                                            img.style.display = 'none';
+                                                        }}
+                                                        className="w-4 h-4 rounded object-cover shrink-0"
+                                                    />
+                                                ) : (
+                                                    <span className="w-2 h-2 rounded-full bg-[#FC6D26] shrink-0" />
+                                                )}
+                                                <span className="truncate font-semibold">{group.name}</span>
                                             </a>
                                         ))}
                                     </div>
@@ -565,7 +790,7 @@ export const CodingActivity = () => {
                                     platform === 'github'
                                         ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                         : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                }`}>
+                                }}`}>
                                     <GitCommitHorizontal size={18} />
                                 </div>
                                 <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
@@ -593,13 +818,13 @@ export const CodingActivity = () => {
                                         <span className="text-[11px] text-slate-400 font-medium shrink-0">Current Streak</span>
                                         <span className={`text-sm font-black shrink-0 ${
                                             platform === 'github' ? 'text-rose-400' : 'text-orange-400'
-                                        }`}>{activeStats.currentStreak} days</span>
+                                        }`}>{activeStats.currentStreak} {activeStats.currentStreak === 1 ? 'day' : 'days'}</span>
                                     </div>
 
                                     {/* Best Streak */}
                                     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
                                         <span className="text-[11px] text-slate-400 font-medium shrink-0">Best Streak</span>
-                                        <span className="text-sm font-black text-amber-400 shrink-0">{activeStats.longestStreak} days</span>
+                                        <span className="text-sm font-black text-amber-400 shrink-0">{activeStats.longestStreak} {activeStats.longestStreak === 1 ? 'day' : 'days'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -693,7 +918,7 @@ export const CodingActivity = () => {
                                 <ExternalLink size={12} />
                             </a>
 
-                            <div className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                            <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-md border ${
                                 platform === 'github'
                                     ? 'text-rose-400/90 bg-rose-500/10 border-rose-500/20'
                                     : 'text-orange-400/90 bg-orange-500/10 border-orange-500/20'
@@ -717,47 +942,26 @@ export const CodingActivity = () => {
                     <div className="overflow-x-auto w-full custom-activity-scrollbar text-slate-300 flex justify-start md:justify-center">
                         <div className="min-w-fit">
                             <AnimatePresence mode="wait">
-                                {platform === 'github' ? (
-                                    <motion.div
-                                        key="github-cal"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <GitHubCalendar
-                                            key={`gh-${refreshKey}`}
-                                            username={githubStats.username}
-                                            colorScheme="dark"
-                                            theme={githubTheme}
-                                            blockSize={12}
-                                            blockMargin={3.5}
-                                            fontSize={11}
-                                            blockRadius={2.5}
-                                        />
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="gitlab-cal"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <ActivityCalendar
-                                            data={gitlabActivities}
-                                            colorScheme="dark"
-                                            theme={gitlabTheme}
-                                            blockSize={12}
-                                            blockMargin={3.5}
-                                            fontSize={11}
-                                            blockRadius={2.5}
-                                            labels={{
-                                                totalCount: `{{count}} contributions in the last year`
-                                            }}
-                                        />
-                                    </motion.div>
-                                )}
+                                <motion.div
+                                    key={`${platform}-calendar`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <ActivityCalendar
+                                        data={activeActivities}
+                                        colorScheme="dark"
+                                        theme={platform === 'github' ? githubTheme : gitlabTheme}
+                                        blockSize={12}
+                                        blockMargin={3.5}
+                                        fontSize={11}
+                                        blockRadius={2.5}
+                                        labels={{
+                                            totalCount: `{{count}} contributions in the last year`
+                                        }}
+                                    />
+                                </motion.div>
                             </AnimatePresence>
                         </div>
                     </div>
@@ -784,5 +988,3 @@ export const CodingActivity = () => {
         </section>
     );
 };
-
-

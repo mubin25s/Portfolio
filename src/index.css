@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tailwindcss";
 
 @theme {
   --color-primary: #80011f; /* Deep Burgundy */
@@ -28,7 +27,7 @@
 }
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
@@ -39,8 +38,7 @@ html {
 
 body {
   @apply bg-[#161616] text-slate-200 font-sans overflow-x-hidden;
-  background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #161616 100%);
-  scroll-snap-type: y mandatory;
+  background: radial-gradient(circle at 50% 50%, #222222 0%, #121212 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -54,11 +52,8 @@ body {
 @layer components {
   .glass-card {
     @apply bg-white/5 border border-white/10 rounded-2xl transition-all duration-300;
-    /* Further reduced blur for maximum performance */
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    will-change: transform, opacity;
-    transform: translateZ(0);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   
   .glass-card:hover {
@@ -67,28 +62,23 @@ body {
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ff3d6a] to-[#80011f];
-    will-change: filter;
   }
 
   .btn-primary {
     @apply px-6 py-3 rounded-full bg-gradient-to-r from-[#80011f] to-[#5c0016] text-white font-semibold 
            transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-[#80011f]/20;
-    will-change: transform;
-    transform: translateZ(0);
   }
 
   .name-white {
     background: linear-gradient(to right, #fff 20%, #ccc 40%, #ccc 60%, #fff 80%);
     background-size: 200% auto;
     @apply bg-clip-text text-transparent animate-shimmer;
-    will-change: background-position;
   }
 
   .name-accent {
     background: linear-gradient(to right, #ff3d6a 20%, #fff 40%, #fff 60%, #ff3d6a 80%);
     background-size: 200% auto;
     @apply bg-clip-text text-transparent animate-shimmer;
-    will-change: background-position;
   }
 
   /* Contact section social link animated pills */
@@ -120,10 +110,7 @@ body {
   }
 
   .snap-section {
-    @apply min-h-screen flex items-center justify-center relative snap-start overflow-hidden py-20 md:py-0;
-    will-change: transform;
-    transform: translateZ(0);
-    content-visibility: auto; /* Significant boost for multi-section pages */
+    @apply min-h-screen flex items-center justify-center relative overflow-hidden py-16 md:py-0;
   }
 }
 
@@ -135,7 +122,6 @@ body {
   height: 100%;
   z-index: -1;
   pointer-events: none;
-  transform: translateZ(0); /* Hardware acceleration */
 }
 
 ::-webkit-scrollbar {
