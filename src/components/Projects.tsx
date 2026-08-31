@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Github, ExternalLink } from 'lucide-react';
+import { Github, ExternalLink, Gitlab } from 'lucide-react';
 
 const featuredProjects = [
     {
@@ -25,6 +25,14 @@ const featuredProjects = [
         link: "https://mfathumsachcha-netizen.github.io/petshelter-Demo/",
         github: "https://github.com/mubin25s/Pet_Shelter",
         image: "https://images.unsplash.com/photo-1450778869180-41d0601e046e"
+    },
+    {
+        title: "Pokédex",
+        description: "An interactive Pokédex web app that lets you explore all Pokémon with detailed stats, evolutions, type badges, and stunning full-screen visuals. Features animated transitions and live data from the PokéAPI.",
+        techStack: ["React.js", "CSS", "JavaScript", "PokéAPI"],
+        link: "https://pokemonpokedex2.netlify.app/",
+        github: "https://gitlab.com/mubin25s/Pokedex",
+        image: "/pokedex.png"
     },
     {
         title: "Sneakers Shop",
@@ -106,9 +114,12 @@ export const Projects = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-2 text-slate-400 hover:text-white transition-colors duration-300 transform hover:-translate-y-1"
-                                    aria-label="GitHub Repository"
+                                    aria-label="Source Code"
                                 >
-                                    <Github size={20} className="md:w-6 md:h-6" />
+                                    {project.github.includes('gitlab.com')
+                                        ? <Gitlab size={20} className="md:w-6 md:h-6" />
+                                        : <Github size={20} className="md:w-6 md:h-6" />
+                                    }
                                 </a>
                                 <a
                                     href={project.link}
