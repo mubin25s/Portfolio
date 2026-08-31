@@ -533,23 +533,23 @@ export const CodingActivity = () => {
     }, [fetchAllData]);
 
     return (
-        <section id="activity" ref={sectionRef} className="snap-section relative py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center min-h-screen">
+        <section id="activity" ref={sectionRef} className="snap-section relative py-10 md:py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col justify-center">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className={`absolute top-[15%] left-[5%] w-80 h-80 rounded-full blur-3xl transition-colors duration-700 ${
+                <div className={`absolute top-[15%] left-[5%] w-72 h-72 rounded-full blur-3xl transition-colors duration-700 ${
                     platform === 'github' ? 'bg-red-600/10' : 'bg-orange-500/10'
                 }`} />
-                <div className={`absolute bottom-[15%] right-[5%] w-80 h-80 rounded-full blur-3xl transition-colors duration-700 ${
+                <div className={`absolute bottom-[15%] right-[5%] w-72 h-72 rounded-full blur-3xl transition-colors duration-700 ${
                     platform === 'github' ? 'bg-[#80011f]/20' : 'bg-amber-600/10'
                 }`} />
-                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] rounded-full blur-3xl transition-colors duration-700 ${
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[200px] rounded-full blur-3xl transition-colors duration-700 ${
                     platform === 'github' ? 'bg-rose-950/15' : 'bg-orange-950/15'
                 }`} />
             </div>
 
             <div className="w-full relative z-10">
                 {/* ── Section Header with Platform Swap Button ── */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8 md:mb-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 md:mb-6">
                     <motion.div
                         initial={{ opacity: 0, y: -15 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -557,10 +557,10 @@ export const CodingActivity = () => {
                         transition={{ duration: 0.6 }}
                         className="text-left"
                     >
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight flex items-center gap-3 flex-wrap">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight flex items-center gap-2.5 flex-wrap">
                             <span>{platform === 'github' ? 'GitHub' : 'GitLab'} &amp; Open Source Activity</span>
                         </h2>
-                        <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl font-normal">
+                        <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl font-normal">
                             Live commit stream, contribution calendar, repositories, and streaks dynamically synchronized from {platform === 'github' ? 'GitHub' : 'GitLab'}.
                         </p>
                     </motion.div>
@@ -570,32 +570,32 @@ export const CodingActivity = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        className="flex items-center gap-3 self-start md:self-auto flex-wrap"
+                        className="flex items-center gap-2.5 self-start md:self-auto flex-wrap"
                     >
                         {/* Instant Refresh Button */}
                         <button
                             onClick={() => fetchAllData()}
                             disabled={isRefreshing}
                             title={`Click to re-sync data now (Last sync: ${lastUpdated})`}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#0e1622]/90 border border-slate-700/80 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-600 transition-all backdrop-blur-xl shadow-lg active:scale-95 disabled:opacity-60 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0e1622]/90 border border-slate-700/80 text-[11px] font-semibold text-slate-300 hover:text-white hover:border-slate-600 transition-all backdrop-blur-xl shadow-md active:scale-95 disabled:opacity-60 cursor-pointer"
                             aria-label="Refresh live data"
                         >
-                            <RotateCw size={13} className={`${isRefreshing ? 'animate-spin text-rose-400' : ''}`} />
+                            <RotateCw size={12} className={`${isRefreshing ? 'animate-spin text-rose-400' : ''}`} />
                             <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
                         </button>
 
-                        <div className="inline-flex items-center p-1.5 rounded-2xl bg-[#0e1622]/90 border border-slate-700/80 backdrop-blur-xl shadow-xl">
+                        <div className="inline-flex items-center p-1 rounded-xl bg-[#0e1622]/90 border border-slate-700/80 backdrop-blur-xl shadow-lg">
                             {/* GitHub Option */}
                             <button
                                 onClick={() => setPlatform('github')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer ${
                                     platform === 'github'
                                         ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-100'
                                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                                 }`}
                                 aria-label="Show GitHub statistics"
                             >
-                                <Github size={15} />
+                                <Github size={13} />
                                 <span>GitHub</span>
                             </button>
 
@@ -603,23 +603,23 @@ export const CodingActivity = () => {
                             <button
                                 onClick={() => setPlatform(p => (p === 'github' ? 'gitlab' : 'github'))}
                                 title="Swap Platform"
-                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-transform active:rotate-180 duration-300 cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-transform active:rotate-180 duration-300 cursor-pointer"
                                 aria-label="Toggle between GitHub and GitLab"
                             >
-                                <ArrowLeftRight size={14} />
+                                <ArrowLeftRight size={13} />
                             </button>
 
                             {/* GitLab Option */}
                             <button
                                 onClick={() => setPlatform('gitlab')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer ${
                                     platform === 'gitlab'
                                         ? 'bg-[#FC6D26] text-white shadow-md shadow-[#FC6D26]/30 scale-100'
                                         : 'text-slate-400 hover:text-[#FC6D26] hover:bg-[#FC6D26]/10'
                                 }`}
                                 aria-label="Show GitLab statistics"
                             >
-                                <Gitlab size={15} />
+                                <Gitlab size={13} />
                                 <span>GitLab</span>
                             </button>
                         </div>
@@ -630,18 +630,18 @@ export const CodingActivity = () => {
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={platform}
-                        initial={{ opacity: 0, y: 15 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.35 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 md:gap-5"
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 md:gap-3.5"
                     >
                         {/* 1. Profile Card (Spans 4 columns) */}
-                        <div className={`sm:col-span-2 lg:col-span-4 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 transition-all duration-300 group ${
+                        <div className={`sm:col-span-2 lg:col-span-4 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3.5 md:p-4 flex flex-col justify-between shadow-md shadow-black/40 transition-all duration-300 group ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
                             <div>
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-3">
                                     <img
                                         src={activeStats.avatarUrl}
                                         alt={activeStats.name}
@@ -652,18 +652,18 @@ export const CodingActivity = () => {
                                                 img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStats.name)}&background=1e293b&color=f43f5e&size=128&bold=true`;
                                             }
                                         }}
-                                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover object-[center_25%] border border-white/10 shadow-md shrink-0 bg-slate-800"
+                                        className="w-11 h-11 md:w-12 md:h-12 rounded-xl object-cover object-[center_25%] border border-white/10 shadow-sm shrink-0 bg-slate-800"
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg md:text-xl font-bold text-white tracking-tight truncate">
+                                        <h3 className="text-base md:text-lg font-bold text-white tracking-tight truncate">
                                             {activeStats.name}
                                         </h3>
-                                        <p className={`text-xs md:text-sm font-medium mt-0.5 ${
+                                        <p className={`text-xs font-medium ${
                                             platform === 'github' ? 'text-rose-400' : 'text-orange-400'
                                         }`}>
                                             @{activeStats.username}
                                         </p>
-                                        <p className="text-slate-400 text-xs mt-1.5 leading-snug line-clamp-2">
+                                        <p className="text-slate-400 text-[11px] mt-0.5 leading-tight line-clamp-2">
                                             {activeStats.bio}
                                         </p>
                                     </div>
@@ -671,7 +671,7 @@ export const CodingActivity = () => {
 
                                 {/* 3 Organizations Row (For GitHub) */}
                                 {platform === 'github' && organizations.length > 0 && (
-                                    <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-slate-800/60 w-full">
+                                    <div className="grid grid-cols-3 gap-1.5 mt-2.5 pt-2 border-t border-slate-800/60 w-full">
                                         {organizations.slice(0, 3).map((org, i) => (
                                             <a
                                                 key={i}
@@ -679,13 +679,13 @@ export const CodingActivity = () => {
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 title={org.name}
-                                                className="group/org flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[10px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
+                                                className="group/org flex items-center justify-center gap-1 px-1.5 py-1 rounded-md bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[9.5px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
                                             >
                                                 {org.avatarUrl ? (
                                                     <img
                                                         src={org.avatarUrl}
                                                         alt={org.name}
-                                                        className="w-3.5 h-3.5 rounded object-cover shrink-0"
+                                                        className="w-3 h-3 rounded object-cover shrink-0"
                                                     />
                                                 ) : (
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
@@ -698,7 +698,7 @@ export const CodingActivity = () => {
 
                                 {/* Groups Row (For GitLab) */}
                                 {platform === 'gitlab' && gitlabGroups.length > 0 && (
-                                    <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-800/60 w-full">
+                                    <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800/60 w-full">
                                         {gitlabGroups.map((group, i) => (
                                             <a
                                                 key={i}
@@ -706,7 +706,7 @@ export const CodingActivity = () => {
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 title={group.name}
-                                                className="group/org inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[11px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
+                                                className="group/org inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-[10px] font-medium text-slate-300 hover:text-white transition-all hover:scale-[1.02] shadow-sm min-w-0"
                                             >
                                                 {group.avatarUrl ? (
                                                     <img
@@ -716,10 +716,10 @@ export const CodingActivity = () => {
                                                             const img = e.target as HTMLImageElement;
                                                             img.style.display = 'none';
                                                         }}
-                                                        className="w-4 h-4 rounded object-cover shrink-0"
+                                                        className="w-3.5 h-3.5 rounded object-cover shrink-0"
                                                     />
                                                 ) : (
-                                                    <span className="w-2 h-2 rounded-full bg-[#FC6D26] shrink-0" />
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-[#FC6D26] shrink-0" />
                                                 )}
                                                 <span className="truncate font-semibold">{group.name}</span>
                                             </a>
@@ -729,14 +729,14 @@ export const CodingActivity = () => {
                             </div>
 
                             {/* Bottom Row of Profile Card */}
-                            <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-800/60">
-                                <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
-                                    <span className="flex items-center gap-1.5 hover:text-slate-300 transition-colors">
-                                        <BookOpen size={14} className="text-slate-400" />
+                            <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-slate-800/60">
+                                <div className="flex items-center gap-3 text-slate-400 text-[11px] font-medium">
+                                    <span className="flex items-center gap-1 hover:text-slate-300 transition-colors">
+                                        <BookOpen size={12} className="text-slate-400" />
                                         <span>{activeStats.publicRepos} Repos</span>
                                     </span>
-                                    <span className="flex items-center gap-1.5 hover:text-slate-300 transition-colors">
-                                        <Users size={14} className="text-slate-400" />
+                                    <span className="flex items-center gap-1 hover:text-slate-300 transition-colors">
+                                        <Users size={12} className="text-slate-400" />
                                         <span>{activeStats.followers} Followers</span>
                                     </span>
                                 </div>
@@ -748,125 +748,125 @@ export const CodingActivity = () => {
                                     }
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className={`inline-flex items-center gap-1.5 font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all duration-200 shadow-sm active:scale-95 ${
+                                    className={`inline-flex items-center gap-1 font-bold text-[11px] px-2.5 py-1 rounded-lg transition-all duration-200 shadow-sm active:scale-95 ${
                                         platform === 'github'
                                             ? 'bg-rose-600 text-white hover:bg-rose-500 shadow-rose-600/20'
                                             : 'bg-[#FC6D26] text-white hover:bg-[#e25a18] shadow-[#FC6D26]/20'
                                     }`}
                                 >
                                     <span>{platform === 'github' ? 'GitHub' : 'GitLab'}</span>
-                                    <ExternalLink size={12} className="stroke-[2.5]" />
+                                    <ExternalLink size={10} className="stroke-[2.5]" />
                                 </a>
                             </div>
                         </div>
 
                         {/* 2. Public Repositories Card */}
-                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3.5 md:p-4 flex flex-col justify-between shadow-md shadow-black/40 hover:-translate-y-0.5 transition-all duration-300 ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 border ${
                                 platform === 'github'
                                     ? 'bg-red-500/10 border-red-500/20 text-red-400'
                                     : 'bg-orange-500/10 border-orange-500/20 text-orange-400'
                             }`}>
-                                <FolderGit2 size={20} />
+                                <FolderGit2 size={16} />
                             </div>
                             <div>
-                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                <span className="text-xl md:text-2xl font-black text-white tracking-tight block">
                                     {animatedRepos}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                <span className="text-[11px] text-slate-400 font-medium mt-0.5 block">
                                     Public Repositories
                                 </span>
                             </div>
                         </div>
 
                         {/* 3. Total Contributions & Streaks Card */}
-                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3.5 md:p-4 flex flex-col justify-between shadow-md shadow-black/40 hover:-translate-y-0.5 transition-all duration-300 ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
+                            <div className="flex items-center justify-between mb-2">
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center border ${
                                     platform === 'github'
                                         ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                         : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                }}`}>
-                                    <GitCommitHorizontal size={18} />
+                                }`}>
+                                    <GitCommitHorizontal size={15} />
                                 </div>
-                                <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                <div className={`inline-flex items-center gap-1 text-[9.5px] font-bold px-1.5 py-0.5 rounded border ${
                                     platform === 'github'
                                         ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
                                         : 'text-orange-400 bg-orange-500/10 border-orange-500/20'
                                 }`}>
-                                    <Flame size={11} />
+                                    <Flame size={10} />
                                     <span>Streak</span>
                                 </div>
                             </div>
 
                             <div>
-                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                <span className="text-xl md:text-2xl font-black text-white tracking-tight block">
                                     {animatedContributions > 0 ? `${animatedContributions}+` : `${activeStats.totalContributions}+`}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium mt-0.5 block">
+                                <span className="text-[11px] text-slate-400 font-medium mt-0.5 block">
                                     Total Contributions
                                 </span>
 
                                 {/* 2 Streak Boxes */}
-                                <div className="flex flex-col gap-1.5 mt-3 pt-3 border-t border-slate-800/60">
+                                <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-slate-800/60">
                                     {/* Current Streak */}
-                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
-                                        <span className="text-[11px] text-slate-400 font-medium shrink-0">Current Streak</span>
-                                        <span className={`text-sm font-black shrink-0 ${
+                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-md px-2 py-1 flex items-center justify-between gap-1.5">
+                                        <span className="text-[10px] text-slate-400 font-medium shrink-0">Current Streak</span>
+                                        <span className={`text-xs font-bold shrink-0 ${
                                             platform === 'github' ? 'text-rose-400' : 'text-orange-400'
                                         }`}>{activeStats.currentStreak} {activeStats.currentStreak === 1 ? 'day' : 'days'}</span>
                                     </div>
 
                                     {/* Best Streak */}
-                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5 flex items-center justify-between gap-2">
-                                        <span className="text-[11px] text-slate-400 font-medium shrink-0">Best Streak</span>
-                                        <span className="text-sm font-black text-amber-400 shrink-0">{activeStats.longestStreak} {activeStats.longestStreak === 1 ? 'day' : 'days'}</span>
+                                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-md px-2 py-1 flex items-center justify-between gap-1.5">
+                                        <span className="text-[10px] text-slate-400 font-medium shrink-0">Best Streak</span>
+                                        <span className="text-xs font-bold text-amber-400 shrink-0">{activeStats.longestStreak} {activeStats.longestStreak === 1 ? 'day' : 'days'}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* 4. Primary Language Card */}
-                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3.5 md:p-4 flex flex-col justify-between shadow-md shadow-black/40 hover:-translate-y-0.5 transition-all duration-300 ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 border ${
                                 platform === 'github'
                                     ? 'bg-red-500/10 border-red-500/20 text-red-400'
                                     : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                             }`}>
-                                <Code2 size={20} />
+                                <Code2 size={16} />
                             </div>
                             <div>
-                                <span className="text-xl md:text-2xl font-black text-white tracking-tight block truncate">
+                                <span className="text-lg md:text-xl font-black text-white tracking-tight block truncate">
                                     {activeStats.primaryLanguage}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                <span className="text-[11px] text-slate-400 font-medium mt-0.5 block">
                                     Primary Language
                                 </span>
                             </div>
                         </div>
 
                         {/* 5. Followers Card */}
-                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-lg shadow-black/40 hover:-translate-y-1 transition-all duration-300 ${
+                        <div className={`lg:col-span-2 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3.5 md:p-4 flex flex-col justify-between shadow-md shadow-black/40 hover:-translate-y-0.5 transition-all duration-300 ${
                             platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                         }`}>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-6 border ${
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 border ${
                                 platform === 'github'
                                     ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                     : 'bg-orange-500/10 border-orange-500/20 text-orange-400'
                             }`}>
-                                <Users size={20} />
+                                <Users size={16} />
                             </div>
                             <div>
-                                <span className="text-2xl md:text-3xl font-black text-white tracking-tight block">
+                                <span className="text-xl md:text-2xl font-black text-white tracking-tight block">
                                     {animatedFollowers}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium mt-1 block">
+                                <span className="text-[11px] text-slate-400 font-medium mt-0.5 block">
                                     Followers
                                 </span>
                             </div>
@@ -876,31 +876,31 @@ export const CodingActivity = () => {
 
                 {/* ── Bottom Card: Contribution Calendar ── */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className={`mt-4 md:mt-5 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 md:p-5 shadow-2xl relative overflow-hidden group transition-all duration-300 ${
+                    transition={{ duration: 0.5, delay: 0.15 }}
+                    className={`mt-3 md:mt-3.5 bg-[#0e1622]/90 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3 md:p-3.5 shadow-xl relative overflow-hidden group transition-all duration-300 ${
                         platform === 'github' ? 'hover:border-rose-500/30' : 'hover:border-orange-500/30'
                     }`}
                 >
                     {/* Header inside calendar card */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3 md:mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 md:mb-2.5">
                         <div>
-                            <div className="flex items-center gap-2">
-                                <span className={`font-mono font-bold text-base md:text-lg ${
+                            <div className="flex items-center gap-1.5">
+                                <span className={`font-mono font-bold text-sm md:text-base ${
                                     platform === 'github' ? 'text-rose-400' : 'text-orange-400'
                                 }`}>&gt;_</span>
-                                <h3 className="text-base md:text-lg font-bold text-white tracking-tight">
+                                <h3 className="text-sm md:text-base font-bold text-white tracking-tight">
                                     Contribution Calendar
                                 </h3>
                             </div>
-                            <p className="text-[11px] md:text-xs text-slate-400 mt-0.5">
+                            <p className="text-[10px] md:text-[11px] text-slate-400 mt-0.5">
                                 Live {platform === 'github' ? 'GitHub' : 'GitLab'} contribution activity over the past year (@{activeStats.username})
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3 self-start sm:self-auto">
+                        <div className="flex items-center gap-2.5 self-start sm:self-auto">
                             <a
                                 href={platform === 'github'
                                     ? `https://github.com/${activeStats.username}`
@@ -908,29 +908,29 @@ export const CodingActivity = () => {
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                                className={`inline-flex items-center gap-1 text-[11px] font-medium transition-colors ${
                                     platform === 'github'
                                         ? 'text-rose-400 hover:text-rose-300'
                                         : 'text-[#FC6D26] hover:text-[#ff8547]'
                                 }`}
                             >
                                 <span>View {platform === 'github' ? 'GitHub' : 'GitLab'} Graph</span>
-                                <ExternalLink size={12} />
+                                <ExternalLink size={10} />
                             </a>
 
-                            <div className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-md border ${
+                            <div className={`inline-flex items-center gap-1 text-[9.5px] font-semibold px-2 py-0.5 rounded border ${
                                 platform === 'github'
                                     ? 'text-rose-400/90 bg-rose-500/10 border-rose-500/20'
                                     : 'text-orange-400/90 bg-orange-500/10 border-orange-500/20'
                             }`}>
                                 {platform === 'github' ? (
                                     <>
-                                        <CheckCircle2 size={11} className="text-rose-400" />
+                                        <CheckCircle2 size={10} className="text-rose-400" />
                                         <span>Live Synced</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Gitlab size={11} className="text-[#FC6D26]" />
+                                        <Gitlab size={10} className="text-[#FC6D26]" />
                                         <span>GitLab Synced</span>
                                     </>
                                 )}
@@ -947,16 +947,16 @@ export const CodingActivity = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
+                                    transition={{ duration: 0.25 }}
                                 >
                                     <ActivityCalendar
                                         data={activeActivities}
                                         colorScheme="dark"
                                         theme={platform === 'github' ? githubTheme : gitlabTheme}
-                                        blockSize={12}
-                                        blockMargin={3.5}
-                                        fontSize={11}
-                                        blockRadius={2.5}
+                                        blockSize={10.5}
+                                        blockMargin={3}
+                                        fontSize={10}
+                                        blockRadius={2}
                                         labels={{
                                             totalCount: `{{count}} contributions in the last year`
                                         }}
