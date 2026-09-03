@@ -55,39 +55,119 @@ const DEFAULT_GITLAB_GROUPS: Organization[] = [
     },
 ];
 
-// Multi-tier CORS Proxy Fallback fetcher
-const PROXIES = [
-    (url: string) => url, // Direct first
-    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url: string) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-];
+// LocalStorage cache keys for 0ms instant load (v5 for fresh sync)
+const CACHE_KEYS = {
+    GH_STATS: 'mubin_gh_stats_v5',
+    GH_ACTIVITIES: 'mubin_gh_activities_v5',
+    GH_ORGS: 'mubin_gh_orgs_v5',
+    GL_STATS: 'mubin_gl_stats_v5',
+    GL_ACTIVITIES: 'mubin_gl_activities_v5',
+    LAST_SYNC: 'mubin_last_sync_v5',
+};
 
-async function fetchWithFallback<T = unknown>(url: string, isText = false): Promise<T | null> {
-    for (const proxyFn of PROXIES) {
-        try {
-            const targetUrl = proxyFn(url);
-            const res = await fetch(targetUrl, {
-                headers: isText ? {} : { Accept: 'application/json' },
+function getStoredJson<T>(key: string, fallback: T): T {
+    try {
+        if (typeof window !== 'undefined') {
+            // Clean up obsolete caches
+            ['mubin_gh_stats_v3', 'mubin_gh_stats_v4', 'mubin_last_sync_v3', 'mubin_last_sync_v4'].forEach(k => {
+                try { localStorage.removeItem(k); } catch { /* ignore */ }
             });
-            if (res.ok) {
-                if (isText) {
-                    return (await res.text()) as unknown as T;
-                }
-                const data = await res.json();
-                return data;
+
+            const item = localStorage.getItem(key);
+            if (item) {
+                const parsed = JSON.parse(item);
+                if (parsed !== null && parsed !== undefined) return parsed;
             }
-        } catch {
-            // Try next proxy
         }
+    } catch {
+        // Fallback on error
     }
+    return fallback;
+}
+
+function setStoredJson(key: string, value: unknown) {
+    try {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+    } catch {
+        // Ignore storage full / private mode errors
+    }
+}
+
+// Fast timeout-bounded fetcher
+async function fetchWithTimeout(url: string, isText = false, timeoutMs = 3000): Promise<{ ok: boolean; data: any }> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const res = await fetch(url, {
+            signal: controller.signal,
+            headers: isText ? {} : { Accept: 'application/json' },
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+            const data = isText ? await res.text() : await res.json();
+            return { ok: true, data };
+        }
+    } catch {
+        clearTimeout(timer);
+    }
+    return { ok: false, data: null };
+}
+
+// Multi-tier fast fallback fetcher
+async function fetchWithFallback<T = unknown>(url: string, isText = false, timeoutMs = 3000): Promise<T | null> {
+    // 1. Direct fetch (fastest)
+    const direct = await fetchWithTimeout(url, isText, timeoutMs);
+    if (direct.ok && direct.data) return direct.data as T;
+
+    // 2. High-speed CORS proxies with short timeout
+    const proxies = [
+        `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    ];
+
+    for (const proxyUrl of proxies) {
+        const proxied = await fetchWithTimeout(proxyUrl, isText, 2500);
+        if (proxied.ok && proxied.data) return proxied.data as T;
+    }
+
     return null;
 }
 
-// Parse live GitHub streak stats directly from GitHub Streak Stats SVG API
+// Scrapes live public stats (followers, repos) from GitHub directly when API is rate-limited
+async function fetchGithubProfileScrape(username: string) {
+    const url = `https://github.com/${username}`;
+    const html = await fetchWithFallback<string>(url, true, 3000);
+    if (!html) return null;
+
+    try {
+        const followersMatch =
+            html.match(/tab=followers"[^>]*>[\s\S]*?<span[^>]*class="[^"]*text-bold[^"]*"[^>]*>\s*([\d,]+)\s*<\/span>/i) ||
+            html.match(/<span[^>]*class="[^"]*text-bold[^"]*"[^>]*>\s*([\d,]+)\s*<\/span>\s*followers/i) ||
+            html.match(/([\d,]+)\s*followers/i);
+
+        const reposMatch =
+            html.match(/tab=repositories"[^>]*>[\s\S]*?<span[^>]*class="[^"]*text-bold[^"]*"[^>]*>\s*([\d,]+)\s*<\/span>/i) ||
+            html.match(/<span[^>]*class="[^"]*text-bold[^"]*"[^>]*>\s*([\d,]+)\s*<\/span>\s*repositories/i) ||
+            html.match(/has\s*([\d,]+)\s*repositories/i) ||
+            html.match(/([\d,]+)\s*repositories/i);
+
+        const parseNum = (str?: string) => (str ? parseInt(str.replace(/,/g, ''), 10) : undefined);
+
+        return {
+            followers: parseNum(followersMatch?.[1]),
+            publicRepos: parseNum(reposMatch?.[1]),
+        };
+    } catch {
+        return null;
+    }
+}
+
+// Parse live GitHub streak stats directly from GitHub Streak Stats SVG API (with strict 2.5s timeout)
 async function fetchGithubStreakStats(username: string) {
     const url = `https://github-readme-streak-stats.herokuapp.com/?user=${username}&format=svg`;
-    const svgText = await fetchWithFallback<string>(url, true);
+    const svgText = await fetchWithFallback<string>(url, true, 2500);
     if (!svgText) return null;
 
     try {
@@ -243,48 +323,53 @@ function useCountUp(target: number | null, duration = 1400) {
     return count;
 }
 
+// Real baseline stats matching live profile data
+const DEFAULT_GH_STATS = {
+    name: 'Fathum Mubin',
+    username: 'mubin25s',
+    bio: 'Software Engineering Undergraduate & Developer',
+    avatarUrl: 'https://github.com/mubin25s.png',
+    publicRepos: 24,
+    followers: 31,
+    totalContributions: 1441,
+    currentStreak: 4,
+    longestStreak: 104,
+    primaryLanguage: 'TypeScript',
+};
+
+const DEFAULT_GL_STATS = {
+    name: 'Fathum Mubin',
+    username: 'mubin25s',
+    bio: 'Software Engineering Undergraduate & Developer',
+    avatarUrl: '/Mubin.jpeg',
+    publicRepos: 18,
+    followers: 24,
+    totalContributions: 620,
+    currentStreak: 1,
+    longestStreak: 12,
+    primaryLanguage: 'JavaScript',
+};
+
 export const CodingActivity = () => {
     const [platform, setPlatform] = useState<'github' | 'gitlab'>('github');
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState<string>('Just now');
+    const [lastUpdated, setLastUpdated] = useState<string>(() => getStoredJson(CACHE_KEYS.LAST_SYNC, 'Live Synced'));
 
-    // GitHub stats state — sensible live baseline defaults
-    const [githubStats, setGithubStats] = useState({
-        name: 'Fathum Mubin',
-        username: 'mubin25s',
-        bio: 'Software Engineering Undergraduate & Developer',
-        avatarUrl: 'https://github.com/mubin25s.png',
-        publicRepos: 23,
-        followers: 30,
-        totalContributions: 1596,
-        currentStreak: 1,
-        longestStreak: 104,
-        primaryLanguage: 'TypeScript',
-    });
+    // GitHub stats state — loaded instantly from cache or baseline
+    const [githubStats, setGithubStats] = useState(() => getStoredJson(CACHE_KEYS.GH_STATS, DEFAULT_GH_STATS));
 
-    // GitLab stats state — sensible live baseline defaults
-    const [gitlabStats, setGitlabStats] = useState({
-        name: 'Fathum Mubin',
-        username: 'mubin25s',
-        bio: 'Software Engineering Undergraduate & Developer',
-        avatarUrl: '/Mubin.jpeg',
-        publicRepos: 18,
-        followers: 24,
-        totalContributions: 620,
-        currentStreak: 1,
-        longestStreak: 12,
-        primaryLanguage: 'JavaScript',
-    });
+    // GitLab stats state — loaded instantly from cache or baseline
+    const [gitlabStats, setGitlabStats] = useState(() => getStoredJson(CACHE_KEYS.GL_STATS, DEFAULT_GL_STATS));
 
     // Organizations state (3 organizations for GitHub)
-    const [organizations, setOrganizations] = useState<Organization[]>(DEFAULT_ORGS);
+    const [organizations, setOrganizations] = useState<Organization[]>(() => getStoredJson(CACHE_KEYS.GH_ORGS, DEFAULT_ORGS));
 
     // Groups state (for GitLab)
     const [gitlabGroups] = useState<Organization[]>(DEFAULT_GITLAB_GROUPS);
 
-    // Calendar activities data
-    const [githubActivities, setGithubActivities] = useState<Activity[]>(createInitialActivities);
-    const [gitlabActivities, setGitlabActivities] = useState<Activity[]>(createInitialActivities);
+    // Calendar activities data — loaded instantly from cache or baseline
+    const [githubActivities, setGithubActivities] = useState<Activity[]>(() => getStoredJson(CACHE_KEYS.GH_ACTIVITIES, createInitialActivities()));
+    const [gitlabActivities, setGitlabActivities] = useState<Activity[]>(() => getStoredJson(CACHE_KEYS.GL_ACTIVITIES, createInitialActivities()));
 
     const sectionRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(sectionRef, { once: true, margin: '-40px' });
@@ -293,9 +378,9 @@ export const CodingActivity = () => {
     const activeActivities = platform === 'github' ? githubActivities : gitlabActivities;
 
     // Animated counters for active stats
-    const animatedRepos = useCountUp(isInView ? activeStats.publicRepos : 0, 1200);
-    const animatedContributions = useCountUp(isInView ? activeStats.totalContributions : 0, 1400);
-    const animatedFollowers = useCountUp(isInView ? activeStats.followers : 0, 1200);
+    const animatedRepos = useCountUp(isInView ? activeStats.publicRepos : 0, 1000);
+    const animatedContributions = useCountUp(isInView ? activeStats.totalContributions : 0, 1000);
+    const animatedFollowers = useCountUp(isInView ? activeStats.followers : 0, 1000);
 
     // Color themes
     const githubTheme = {
@@ -313,18 +398,20 @@ export const CodingActivity = () => {
         setIsRefreshing(true);
 
         try {
-            // Parallel fetch all resources
+            // Parallel fetch all resources with bounded timeouts
             const [
                 ghData,
+                ghScrape,
+                unghRepos,
                 orgsData,
                 repos,
-                streakStats,
                 contribData,
+                streakStats,
                 glUsers,
                 glProjects,
                 calendarMap
             ] = await Promise.allSettled([
-                // 1. Live GitHub User Profile
+                // 1. Live GitHub User Profile (API)
                 fetchWithFallback<{
                     name?: string;
                     login?: string;
@@ -332,46 +419,66 @@ export const CodingActivity = () => {
                     avatar_url?: string;
                     public_repos?: number;
                     followers?: number;
-                }>(GH_USER_API),
+                }>(GH_USER_API, false, 2500),
 
-                // 2. Live GitHub Organizations
-                fetchWithFallback<{ login?: string; name?: string; html_url?: string; avatar_url?: string }[]>(GH_ORGS_API),
+                // 2. Live GitHub Scraping (bypasses unauthenticated rate limits)
+                fetchGithubProfileScrape('mubin25s'),
 
-                // 3. Live GitHub Top Language
-                fetchWithFallback<{ language?: string }[]>('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100'),
+                // 3. Live Ungh Repos (Fast, no rate limits)
+                fetchWithFallback<{ repos?: { name: string; description?: string }[] }>('https://ungh.cc/users/mubin25s/repos', false, 2500),
 
-                // 4. Live Streak & Contribution Stats from Streak API
-                fetchGithubStreakStats('mubin25s'),
+                // 4. Live GitHub Organizations
+                fetchWithFallback<{ login?: string; name?: string; html_url?: string; avatar_url?: string }[]>(GH_ORGS_API, false, 2500),
 
-                // 5. Live GitHub Contributions Total & Calendar Streaks
+                // 5. Live GitHub Top Language
+                fetchWithFallback<{ language?: string }[]>('https://api.github.com/users/mubin25s/repos?sort=pushed&per_page=100', false, 2500),
+
+                // 6. Live GitHub Contributions Total & Calendar Streaks (Fast primary data)
                 fetchWithFallback<{
                     total?: { lastYear?: number; [year: string]: number | undefined };
                     contributions?: { date: string; count: number; level: number }[];
-                }>(`${GH_CONTRIB_API}/mubin25s?y=last`),
+                }>(`${GH_CONTRIB_API}/mubin25s?y=last`, false, 3000),
 
-                // 6. Live GitLab User Profile
-                fetchWithFallback<{ id: number; name?: string; username?: string; bio?: string; avatar_url?: string }[]>(GITLAB_USER_API),
+                // 7. Live Streak & Contribution Stats from Streak API (Non-blocking secondary)
+                fetchGithubStreakStats('mubin25s'),
 
-                // 7. Live GitLab Projects (Repos)
-                fetchWithFallback<{ star_count?: number }[]>('https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100'),
+                // 8. Live GitLab User Profile
+                fetchWithFallback<{ id: number; name?: string; username?: string; bio?: string; avatar_url?: string }[]>(GITLAB_USER_API, false, 2500),
 
-                // 8. Live GitLab Contribution Calendar
-                fetchWithFallback<Record<string, number>>('https://gitlab.com/users/mubin25s/calendar.json')
+                // 9. Live GitLab Projects (Repos)
+                fetchWithFallback<{ star_count?: number }[]>('https://gitlab.com/api/v4/users/mubin25s/projects?per_page=100', false, 2500),
+
+                // 10. Live GitLab Contribution Calendar
+                fetchWithFallback<Record<string, number>>('https://gitlab.com/users/mubin25s/calendar.json', false, 2500)
             ]);
 
+            // Determine fresh values for followers and public repos
+            const liveFollowers =
+                (ghData.status === 'fulfilled' && ghData.value?.followers) ||
+                (ghScrape.status === 'fulfilled' && ghScrape.value?.followers) ||
+                undefined;
+
+            const liveRepos =
+                (unghRepos.status === 'fulfilled' && unghRepos.value?.repos?.length) ||
+                (ghScrape.status === 'fulfilled' && ghScrape.value?.publicRepos) ||
+                (ghData.status === 'fulfilled' && ghData.value?.public_repos) ||
+                undefined;
+
             // Apply GitHub Profile
-            if (ghData.status === 'fulfilled' && ghData.value) {
-                const val = ghData.value;
-                setGithubStats(prev => ({
+            setGithubStats(prev => {
+                const val = ghData.status === 'fulfilled' ? ghData.value : null;
+                const updated = {
                     ...prev,
-                    name: val.name || prev.name,
-                    username: val.login || prev.username,
-                    bio: val.bio || prev.bio,
-                    avatarUrl: val.avatar_url || prev.avatarUrl,
-                    publicRepos: val.public_repos ?? prev.publicRepos,
-                    followers: val.followers ?? prev.followers,
-                }));
-            }
+                    name: val?.name || prev.name,
+                    username: val?.login || prev.username,
+                    bio: val?.bio || prev.bio,
+                    avatarUrl: val?.avatar_url || prev.avatarUrl,
+                    publicRepos: liveRepos !== undefined ? liveRepos : Math.max(prev.publicRepos, 24),
+                    followers: liveFollowers !== undefined ? liveFollowers : Math.max(prev.followers, 31),
+                };
+                setStoredJson(CACHE_KEYS.GH_STATS, updated);
+                return updated;
+            });
 
             // Apply GitHub Orgs
             if (orgsData.status === 'fulfilled' && orgsData.value && Array.isArray(orgsData.value)) {
@@ -383,6 +490,7 @@ export const CodingActivity = () => {
                         avatarUrl: org.avatar_url,
                     }));
                     setOrganizations(fetched);
+                    setStoredJson(CACHE_KEYS.GH_ORGS, fetched);
                 }
             }
 
@@ -398,15 +506,19 @@ export const CodingActivity = () => {
                     });
                     const topLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
                     if (topLang) {
-                        setGithubStats(prev => ({ ...prev, primaryLanguage: topLang }));
+                        setGithubStats(prev => {
+                            const updated = { ...prev, primaryLanguage: topLang };
+                            setStoredJson(CACHE_KEYS.GH_STATS, updated);
+                            return updated;
+                        });
                     }
                 }
             }
 
             // Apply GitHub Streak Stats and Contributions
             let ghTotal = 0;
-            let ghCurrentStreak = 1;
-            let ghLongestStreak = 104;
+            let ghCurrentStreak = 0;
+            let ghLongestStreak = 0;
 
             if (contribData.status === 'fulfilled' && contribData.value) {
                 const cVal = contribData.value;
@@ -415,6 +527,7 @@ export const CodingActivity = () => {
 
                 if (cVal.contributions && Array.isArray(cVal.contributions) && cVal.contributions.length > 0) {
                     setGithubActivities(cVal.contributions);
+                    setStoredJson(CACHE_KEYS.GH_ACTIVITIES, cVal.contributions);
                     const streakInfo = calculateStreaks(cVal.contributions);
                     if (streakInfo.currentStreak > 0) ghCurrentStreak = streakInfo.currentStreak;
                     if (streakInfo.longestStreak > 0) ghLongestStreak = streakInfo.longestStreak;
@@ -426,7 +539,7 @@ export const CodingActivity = () => {
                 if (sVal.totalContributions && sVal.totalContributions > ghTotal) {
                     ghTotal = sVal.totalContributions;
                 }
-                if (typeof sVal.currentStreak === 'number') {
+                if (typeof sVal.currentStreak === 'number' && sVal.currentStreak > 0) {
                     ghCurrentStreak = sVal.currentStreak;
                 }
                 if (typeof sVal.longestStreak === 'number' && sVal.longestStreak > 0) {
@@ -434,25 +547,33 @@ export const CodingActivity = () => {
                 }
             }
 
-            setGithubStats(prev => ({
-                ...prev,
-                totalContributions: ghTotal > 0 ? ghTotal : prev.totalContributions,
-                currentStreak: ghCurrentStreak,
-                longestStreak: ghLongestStreak,
-            }));
+            setGithubStats(prev => {
+                const updated = {
+                    ...prev,
+                    totalContributions: ghTotal > 0 ? ghTotal : prev.totalContributions,
+                    currentStreak: ghCurrentStreak > 0 ? ghCurrentStreak : prev.currentStreak,
+                    longestStreak: ghLongestStreak > 0 ? ghLongestStreak : prev.longestStreak,
+                };
+                setStoredJson(CACHE_KEYS.GH_STATS, updated);
+                return updated;
+            });
 
             // Apply GitLab User Profile
             if (glUsers.status === 'fulfilled' && glUsers.value && Array.isArray(glUsers.value)) {
                 const users = glUsers.value;
                 if (users.length > 0) {
                     const glData = users[0];
-                    setGitlabStats(prev => ({
-                        ...prev,
-                        name: glData.name || prev.name,
-                        username: glData.username || prev.username,
-                        bio: glData.bio || prev.bio,
-                        avatarUrl: glData.avatar_url || prev.avatarUrl,
-                    }));
+                    setGitlabStats(prev => {
+                        const updated = {
+                            ...prev,
+                            name: glData.name || prev.name,
+                            username: glData.username || prev.username,
+                            bio: glData.bio || prev.bio,
+                            avatarUrl: glData.avatar_url || prev.avatarUrl,
+                        };
+                        setStoredJson(CACHE_KEYS.GL_STATS, updated);
+                        return updated;
+                    });
                 }
             }
 
@@ -461,11 +582,15 @@ export const CodingActivity = () => {
                 const projects: { star_count?: number }[] = glProjects.value;
                 if (projects.length > 0) {
                     const starTotal = projects.reduce((acc: number, p: { star_count?: number }) => acc + (p.star_count || 0), 0);
-                    setGitlabStats(prev => ({
-                        ...prev,
-                        publicRepos: projects.length,
-                        followers: starTotal || prev.followers,
-                    }));
+                    setGitlabStats(prev => {
+                        const updated = {
+                            ...prev,
+                            publicRepos: projects.length,
+                            followers: starTotal || prev.followers,
+                        };
+                        setStoredJson(CACHE_KEYS.GL_STATS, updated);
+                        return updated;
+                    });
                 }
             }
 
@@ -488,18 +613,24 @@ export const CodingActivity = () => {
                     if (glTotal > 0) {
                         const glStreaks = calculateStreaks(activities);
                         setGitlabActivities(activities);
-                        setGitlabStats(prev => ({
-                            ...prev,
-                            totalContributions: glTotal,
-                            currentStreak: Math.max(glStreaks.currentStreak, 1),
-                            longestStreak: Math.max(glStreaks.longestStreak, prev.longestStreak),
-                        }));
+                        setStoredJson(CACHE_KEYS.GL_ACTIVITIES, activities);
+                        setGitlabStats(prev => {
+                            const updated = {
+                                ...prev,
+                                totalContributions: glTotal,
+                                currentStreak: Math.max(glStreaks.currentStreak, 1),
+                                longestStreak: Math.max(glStreaks.longestStreak, prev.longestStreak),
+                            };
+                            setStoredJson(CACHE_KEYS.GL_STATS, updated);
+                            return updated;
+                        });
                     }
                 }
             }
 
             const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             setLastUpdated(nowTime);
+            setStoredJson(CACHE_KEYS.LAST_SYNC, nowTime);
         } catch {
             // Keep existing state on error
         } finally {

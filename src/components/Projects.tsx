@@ -5,7 +5,7 @@ const featuredProjects = [
     {
         title: "Course Grade Calculator",
         description: "A web application designed to help students track and calculate their course grades effortlessly. It features an intuitive interface for managing assignments and computing final scores.",
-        techStack: ["HTML", "CSS", "JavaScript"],
+        techStack: ["React.js", "JavaScript", "Firebase"],
         link: "https://course-grade-calculator-25s.web.app/",
         github: "https://github.com/mubin25s/Course-Grade-Calculator",
         image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c"
@@ -14,7 +14,7 @@ const featuredProjects = [
         title: "Pet Shop",
         description: "A full-featured MERN stack application with real-time chat and order management for an online pet store. Includes an admin dashboard, user authentication, and responsive design.",
         techStack: ["React", "Node.js", "Express", "MongoDB", "Tailwind CSS"],
-        link: "https://mfathumsachcha-netizen.github.io/petshop-Demo/",
+        link: "https://pet-shop-ivory-pi.vercel.app/",
         github: "https://github.com/mubin25s/Pet_Shop-3",
         image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee"
     },
@@ -22,7 +22,7 @@ const featuredProjects = [
         title: "Pet Shelter",
         description: "A comprehensive web application for managing pet adoptions and shelter inventory. It features a seamless adoption process, animal profiles, and administrative tools.",
         techStack: ["React", "Node.js", "MongoDB", "Express", "Cloudinary"],
-        link: "https://mfathumsachcha-netizen.github.io/petshelter-Demo/",
+        link: "https://pet-shelter-nine.vercel.app/",
         github: "https://github.com/mubin25s/Pet_Shelter",
         image: "https://images.unsplash.com/photo-1450778869180-41d0601e046e"
     },
